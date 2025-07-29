@@ -1,1 +1,460 @@
-
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhamento para Parar de Fumar</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .progress-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 30px;
+            background-color: #ecf0f1;
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: #27ae60;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .milestones {
+            margin-top: 30px;
+        }
+        .milestone {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .milestone.achieved {
+            background-color: #e8f8f0;
+        }
+        .milestone-check {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .milestone.achieved .milestone-check {
+            background-color: #27ae60;
+            color: white;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .reset-btn {
+            background-color: #e74c3c;
+            margin-top: 20px;
+        }
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        .cravings-log {
+            margin-top: 30px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        .cravings-list {
+            margin-top: 15px;
+        }
+        .craving-item {
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .craving-date {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Meu Progresso para Parar de Fumar</h1>
+    
+    <div class="progress-container">
+        <h2>Seu Progresso</h2>
+        <div id="progress-text" style="text-align: center; font-size: 18px; margin: 10px 0;"></div>
+        <div class="progress-bar">
+            <div id="progress" class="progress"></div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-box">
+                <div>Dias sem fumar</div>
+                <div id="days" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div>Horas sem fumar</div>
+                <div id="hours" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div>Minutos sem fumar</div>
+                <div id="minutes" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div>Cigarros não fumados</div>
+                <div id="cigarettes" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div>Dinheiro economizado</div>
+                <div id="money" class="stat-value">R$ 0</div>
+            </div>
+        </div>
+        
+        <div class="milestones">
+            <h3>Marcos Importantes</h3>
+            <div id="milestone-8h" class="milestone">
+                <div class="milestone-check">8h</div>
+                <div>8 horas: Nível de oxigênio no sangue normaliza</div>
+            </div>
+            <div id="milestone-24h" class="milestone">
+                <div class="milestone-check">24h</div>
+                <div>24 horas: Pulmões começam a se limpar</div>
+            </div>
+            <div id="milestone-48h" class="milestone">
+                <div class="milestone-check">48h</div>
+                <div>48 horas: Nicotina eliminada do corpo</div>
+            </div>
+            <div id="milestone-72h" class="milestone">
+                <div class="milestone-check">72h</div>
+                <div>72 horas: Respiração fica mais fácil</div>
+            </div>
+            <div id="milestone-1w" class="milestone">
+                <div class="milestone-check">1W</div>
+                <div>1 semana: Paladar e olfato melhoram</div>
+            </div>
+            <div id="milestone-2w" class="milestone">
+                <div class="milestone-check">2W</div>
+                <div>2 semanas: Circulação melhora</div>
+            </div>
+            <div id="milestone-1m" class="milestone">
+                <div class="milestone-check">1M</div>
+                <div>1 mês: Pulmões começam a se recuperar</div>
+            </div>
+            <div id="milestone-3m" class="milestone">
+                <div class="milestone-check">3M</div>
+                <div>3 meses: Tosse e falta de ar diminuem</div>
+            </div>
+            <div id="milestone-1y" class="milestone">
+                <div class="milestone-check">1Y</div>
+                <div>1 ano: Risco de doença cardíaca cai pela metade</div>
+            </div>
+        </div>
+        
+        <button id="reset-btn" class="reset-btn">Recomeçar (Resetar Progresso)</button>
+    </div>
+    
+    <div class="progress-container cravings-log">
+        <h2>Registro de Vontade de Fumar</h2>
+        <p>Quando sentir vontade de fumar, descreva como está se sentindo:</p>
+        <textarea id="craving-text" rows="3" placeholder="Estou sentindo..."></textarea>
+        <button id="log-craving-btn">Registrar Vontade</button>
+        
+        <div class="cravings-list" id="cravings-list"></div>
+    </div>
+    
+    <div class="progress-container">
+        <h2>Configurações</h2>
+        <div style="margin-bottom: 15px;">
+            <label for="cigarettes-per-day">Cigarros por dia antes de parar:</label>
+            <input type="number" id="cigarettes-per-day" min="1" max="100" value="10" style="width: 60px; padding: 5px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label for="cigarette-price">Preço médio por maço (20 cigarros):</label>
+            <input type="number" id="cigarette-price" min="1" step="0.01" value="10.00" style="width: 80px; padding: 5px;">
+        </div>
+        <div>
+            <label for="quit-date">Data que parou de fumar:</label>
+            <input type="date" id="quit-date" style="padding: 5px;">
+        </div>
+        <button id="save-settings-btn" style="margin-top: 15px;">Salvar Configurações</button>
+    </div>
+    
+    <script>
+        // Configurações iniciais
+        const settings = {
+            cigarettesPerDay: 10,
+            cigarettePackPrice: 10.00,
+            quitDate: new Date()
+        };
+        
+        // Ajusta a data para hoje - 3 dias (como mencionado)
+        settings.quitDate.setDate(settings.quitDate.getDate() - 3);
+        
+        // Craving log
+        let cravings = [];
+        
+        // Carrega dados do localStorage
+        function loadData() {
+            const savedSettings = localStorage.getItem('smokeFreeSettings');
+            if (savedSettings) {
+                Object.assign(settings, JSON.parse(savedSettings));
+                document.getElementById('cigarettes-per-day').value = settings.cigarettesPerDay;
+                document.getElementById('cigarette-price').value = settings.cigarettePackPrice;
+                document.getElementById('quit-date').value = formatDateInput(settings.quitDate);
+            }
+            
+            const savedCravings = localStorage.getItem('smokeFreeCravings');
+            if (savedCravings) {
+                cravings = JSON.parse(savedCravings);
+                renderCravings();
+            }
+        }
+        
+        // Salva dados no localStorage
+        function saveData() {
+            localStorage.setItem('smokeFreeSettings', JSON.stringify(settings));
+            localStorage.setItem('smokeFreeCravings', JSON.stringify(cravings));
+        }
+        
+        // Formata data para input type="date"
+        function formatDateInput(date) {
+            const d = new Date(date);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            const year = d.getFullYear();
+            
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            
+            return [year, month, day].join('-');
+        }
+        
+        // Calcula o tempo desde que parou de fumar
+        function calculateTime() {
+            const now = new Date();
+            const quitDate = new Date(settings.quitDate);
+            const diff = now - quitDate;
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            const cigarettesNotSmoked = Math.floor(days * settings.cigarettesPerDay);
+            const moneySaved = (cigarettesNotSmoked / 20) * settings.cigarettePackPrice;
+            
+            return {
+                days,
+                hours,
+                minutes,
+                cigarettesNotSmoked,
+                moneySaved: moneySaved.toFixed(2)
+            };
+        }
+        
+        // Atualiza os marcos alcançados
+        function updateMilestones(timeData) {
+            const milestones = {
+                '8h': timeData.hours >= 8 || timeData.days >= 1,
+                '24h': timeData.days >= 1,
+                '48h': timeData.days >= 2,
+                '72h': timeData.days >= 3,
+                '1w': timeData.days >= 7,
+                '2w': timeData.days >= 14,
+                '1m': timeData.days >= 30,
+                '3m': timeData.days >= 90,
+                '1y': timeData.days >= 365
+            };
+            
+            for (const [id, achieved] of Object.entries(milestones)) {
+                const element = document.getElementById(`milestone-${id}`);
+                if (achieved) {
+                    element.classList.add('achieved');
+                } else {
+                    element.classList.remove('achieved');
+                }
+            }
+        }
+        
+        // Atualiza a barra de progresso
+        function updateProgressBar(timeData) {
+            // Vamos considerar 1 ano como 100%
+            const maxDays = 365;
+            const progressPercent = Math.min((timeData.days / maxDays) * 100, 100);
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+            
+            let progressText = '';
+            if (timeData.days < 1) {
+                progressText = `Você está há menos de 1 dia sem fumar. Continue assim!`;
+            } else if (timeData.days < 7) {
+                progressText = `Você está há ${timeData.days} ${timeData.days === 1 ? 'dia' : 'dias'} sem fumar. Os primeiros dias são os mais difíceis - você está indo muito bem!`;
+            } else if (timeData.days < 30) {
+                progressText = `Incrível! Você está há ${timeData.days} dias sem fumar. Seu corpo já está começando a se recuperar.`;
+            } else if (timeData.days < 90) {
+                progressText = `Fantástico! ${timeData.days} dias sem fumar. Você já superou o período mais crítico.`;
+            } else if (timeData.days < 365) {
+                progressText = `Impressionante! ${timeData.days} dias sem fumar. Seus pulmões e coração estão muito melhores agora.`;
+            } else {
+                progressText = `Parabéns! Você completou 1 ano sem fumar. Seu risco de doenças cardíacas já caiu pela metade!`;
+            }
+            
+            document.getElementById('progress-text').textContent = progressText;
+        }
+        
+        // Atualiza a interface
+        function updateUI() {
+            const timeData = calculateTime();
+            
+            document.getElementById('days').textContent = timeData.days;
+            document.getElementById('hours').textContent = timeData.hours;
+            document.getElementById('minutes').textContent = timeData.minutes;
+            document.getElementById('cigarettes').textContent = timeData.cigarettesNotSmoked;
+            document.getElementById('money').textContent = `R$ ${timeData.moneySaved}`;
+            
+            updateMilestones(timeData);
+            updateProgressBar(timeData);
+        }
+        
+        // Renderiza a lista de cravings
+        function renderCravings() {
+            const list = document.getElementById('cravings-list');
+            list.innerHTML = '';
+            
+            if (cravings.length === 0) {
+                list.innerHTML = '<p>Nenhuma vontade registrada ainda. Ótimo trabalho!</p>';
+                return;
+            }
+            
+            cravings.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            cravings.forEach(craving => {
+                const item = document.createElement('div');
+                item.className = 'craving-item';
+                
+                const date = new Date(craving.date);
+                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                
+                item.innerHTML = `
+                    <div class="craving-date">${dateStr}</div>
+                    <div>${craving.text}</div>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+        
+        // Atualiza a interface periodicamente
+        function startUpdating() {
+            updateUI();
+            setInterval(updateUI, 60000); // Atualiza a cada minuto
+        }
+        
+        // Event Listeners
+        document.getElementById('log-craving-btn').addEventListener('click', () => {
+            const text = document.getElementById('craving-text').value.trim();
+            if (text) {
+                cravings.push({
+                    date: new Date().toISOString(),
+                    text: text
+                });
+                
+                document.getElementById('craving-text').value = '';
+                renderCravings();
+                saveData();
+                
+                alert('Vontade registrada. Lembre-se: cada vez que você resiste, fica mais forte!');
+            }
+        });
+        
+        document.getElementById('save-settings-btn').addEventListener('click', () => {
+            settings.cigarettesPerDay = parseInt(document.getElementById('cigarettes-per-day').value) || 10;
+            settings.cigarettePackPrice = parseFloat(document.getElementById('cigarette-price').value) || 10.00;
+            settings.quitDate = new Date(document.getElementById('quit-date').value);
+            
+            saveData();
+            updateUI();
+            alert('Configurações salvas!');
+        });
+        
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja resetar todo o seu progresso? Isso não pode ser desfeito.')) {
+                localStorage.removeItem('smokeFreeSettings');
+                localStorage.removeItem('smokeFreeCravings');
+                settings.cigarettesPerDay = 10;
+                settings.cigarettePackPrice = 10.00;
+                settings.quitDate = new Date();
+                cravings = [];
+                
+                document.getElementById('cigarettes-per-day').value = settings.cigarettesPerDay;
+                document.getElementById('cigarette-price').value = settings.cigarettePackPrice;
+                document.getElementById('quit-date').value = formatDateInput(settings.quitDate);
+                
+                updateUI();
+                renderCravings();
+                alert('Progresso resetado. Você pode começar de novo quando estiver pronto!');
+            }
+        });
+        
+        // Inicialização
+        loadData();
+        startUpdating();
+    </script>
+</body>
+</html>
