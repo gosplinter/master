@@ -1,192 +1,193 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hidrata e Corre 🐭💧</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidrata+ Quest</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #e3f2fd;
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      padding: 20px;
     }
 
-    header {
-      background-color: #42a5f5;
-      color: white;
-      padding: 10px 20px;
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .tracker {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 30px;
       width: 100%;
+      max-width: 500px;
       text-align: center;
-    }
-
-    .status {
-      margin: 10px 0;
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-    }
-
-    .status span {
-      font-weight: bold;
-    }
-
-    #controls {
-      margin: 15px;
-      text-align: center;
+      margin-bottom: 40px;
     }
 
     input {
-      padding: 5px;
-      width: 60px;
-      margin: 0 5px;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      width: 80px;
     }
 
-    #gameArea {
-      background: white;
-      border: 2px solid #ccc;
-      width: 600px;
-      height: 200px;
-      position: relative;
-      overflow: hidden;
+    button {
+      background: #00c9a7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background 0.3s ease;
     }
 
-    #rato {
-      position: absolute;
-      bottom: 0;
-      left: 50px;
-      width: 40px;
-      height: 40px;
-      background: url('https://i.imgur.com/DvL2LbZ.png') no-repeat center / cover;
+    button:hover {
+      background: #00b495;
     }
 
-    #obstacle {
-      position: absolute;
-      bottom: 0;
-      right: -40px;
-      width: 40px;
-      height: 40px;
-      background: brown;
+    .stats {
+      margin-top: 20px;
+      font-size: 1.2rem;
     }
 
-    .jump {
-      animation: jump 0.6s ease;
+    canvas {
+      border: 2px solid #333;
+      margin-top: 20px;
+      background: #fff;
     }
 
-    @keyframes jump {
-      0% { bottom: 0; }
-      50% { bottom: 100px; }
-      100% { bottom: 0; }
+    .lives {
+      font-weight: bold;
+      margin-top: 10px;
+      font-size: 1.2rem;
     }
   </style>
 </head>
 <body>
+  <h1>Hidrata+ Quest 💧🧀</h1>
+  <div class="tracker">
+    <div>
+      <label for="copos">Copos por dia:</label>
+      <input type="number" id="copos" value="8">
+      <label for="ml">ML por copo:</label>
+      <input type="number" id="ml" value="250">
+    </div>
+    <button onclick="beberAgua()">Beber Água 💦</button>
+    <div class="stats" id="status"></div>
+  </div>
+  <canvas id="gameCanvas" width="500" height="200"></canvas>
+  <div class="lives" id="vidas"></div>
 
-<header>
-  <h1>Hidrata e Corre 🐭</h1>
-</header>
+  <script>
+    const statusEl = document.getElementById('status');
+    const vidasEl = document.getElementById('vidas');
+    let vidas = 0;
+    let aguaHoje = 0;
+    let coposHoje = 0;
+    const hoje = new Date().toLocaleDateString();
 
-<div class="status">
-  <span id="litrosTotal">Litros hoje: 0 L</span>
-  <span id="vidas">Vidas: 0</span>
-  <span id="pontos">Pontos: 0</span>
-</div>
+    const dados = JSON.parse(localStorage.getItem('hidratacao')) || {};
+    if (!dados[hoje]) dados[hoje] = { agua: 0, copos: 0, pontos: 0 };
 
-<div id="controls">
-  <label>Copos desejados: <input type="number" id="coposDesejados" value="8"></label>
-  <label>ML por copo: <input type="number" id="mlPorCopo" value="250"></label>
-  <button onclick="beberAgua()">Beber Água</button>
-</div>
-
-<div id="gameArea">
-  <div id="rato"></div>
-  <div id="obstacle"></div>
-</div>
-
-<script>
-  let vidas = 0;
-  let pontos = 0;
-  let litrosHoje = 0;
-  let coposBebidos = 0;
-  const rato = document.getElementById("rato");
-  const obstaculo = document.getElementById("obstacle");
-
-  const todayKey = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-
-  // Carregar dados salvos
-  const dadosHidratacao = JSON.parse(localStorage.getItem('hydrationData')) || {};
-  const dadosJogo = JSON.parse(localStorage.getItem('gameData')) || {};
-
-  litrosHoje = dadosHidratacao[todayKey]?.litros || 0;
-  pontos = dadosJogo[todayKey]?.pontos || 0;
-  vidas = Math.floor(litrosHoje * 1000 / parseInt(document.getElementById("mlPorCopo").value));
-
-  updateStatus();
-
-  function beberAgua() {
-    const ml = parseInt(document.getElementById("mlPorCopo").value) || 250;
-    litrosHoje += ml / 1000;
-    vidas++;
-
-    // Atualiza o armazenamento
-    dadosHidratacao[todayKey] = {
-      litros: litrosHoje,
-      copos: (dadosHidratacao[todayKey]?.copos || 0) + 1
-    };
-    localStorage.setItem('hydrationData', JSON.stringify(dadosHidratacao));
-
-    updateStatus();
-  }
-
-  function updateStatus() {
-    document.getElementById("litrosTotal").innerText = `Litros hoje: ${litrosHoje.toFixed(2)} L`;
-    document.getElementById("vidas").innerText = `Vidas: ${vidas}`;
-    document.getElementById("pontos").innerText = `Pontos: ${pontos}`;
-  }
-
-  function pular() {
-    if (!rato.classList.contains("jump")) {
-      rato.classList.add("jump");
-      setTimeout(() => rato.classList.remove("jump"), 600);
-    }
-  }
-
-  document.body.addEventListener("keydown", e => {
-    if (e.code === "Space") pular();
-  });
-
-  // Movimentação do obstáculo
-  let obsX = 600;
-  setInterval(() => {
-    obsX -= 5;
-    if (obsX < -40) {
-      obsX = 600;
-      pontos++;
-      dadosJogo[todayKey] = { pontos };
-      localStorage.setItem('gameData', JSON.stringify(dadosJogo));
-      updateStatus();
+    function beberAgua() {
+      const copos = parseInt(document.getElementById('copos').value);
+      const ml = parseInt(document.getElementById('ml').value);
+      dados[hoje].agua += ml;
+      dados[hoje].copos++;
+      dados[hoje].pontos++;
+      vidas++;
+      localStorage.setItem('hidratacao', JSON.stringify(dados));
+      atualizarStatus();
     }
 
-    obstaculo.style.right = `${-obsX}px`;
+    function atualizarStatus() {
+      statusEl.innerHTML = `Hoje: ${dados[hoje].copos} copos (${dados[hoje].agua / 1000} L)<br>Total de pontos: ${Object.values(dados).reduce((a,b)=>a+b.pontos,0)}`;
+      vidasEl.innerHTML = `Vidas: ${vidas}`;
+    }
 
-    // Colisão
-    const ratoTop = parseInt(window.getComputedStyle(rato).getPropertyValue("bottom"));
-    if (obsX < 90 && obsX > 40 && ratoTop < 40) {
-      if (vidas > 0) {
-        vidas--;
-        updateStatus();
-        obsX = 600;
-      } else {
-        alert("Game Over 😢 Pontos: " + pontos);
-        pontos = 0;
-        updateStatus();
-        obsX = 600;
+    atualizarStatus();
+
+    // JOGO
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let rato = { x: 50, y: 150, w: 30, h: 30, vy: 0, jumping: false };
+    let chao = 170;
+    let obstaculo = { x: 500, y: 150, w: 20, h: 40 };
+    let pontos = 0;
+    let gameOver = false;
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Desenha rato
+      ctx.fillStyle = "#444";
+      ctx.fillRect(rato.x, rato.y, rato.w, rato.h);
+
+      // Gravetos
+      ctx.fillStyle = "#c0392b";
+      ctx.fillRect(obstaculo.x, obstaculo.y, obstaculo.w, obstaculo.h);
+
+      obstaculo.x -= 4;
+      if (obstaculo.x < -20) {
+        obstaculo.x = canvas.width + Math.random() * 100;
+        pontos++;
       }
-    }
-  }, 30);
-</script>
 
+      // Gravidade
+      rato.vy += 1.5;
+      rato.y += rato.vy;
+
+      if (rato.y > chao) {
+        rato.y = chao;
+        rato.vy = 0;
+        rato.jumping = false;
+      }
+
+      // Colisão
+      if (
+        rato.x < obstaculo.x + obstaculo.w &&
+        rato.x + rato.w > obstaculo.x &&
+        rato.y < obstaculo.y + obstaculo.h &&
+        rato.y + rato.h > obstaculo.y
+      ) {
+        if (vidas > 0) {
+          vidas--;
+          obstaculo.x = canvas.width + 100;
+        } else {
+          gameOver = true;
+        }
+      }
+
+      vidasEl.innerHTML = `Vidas: ${vidas}`;
+      if (!gameOver) requestAnimationFrame(loop);
+      else ctx.fillText("Game Over", 200, 100);
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.code === "Space" && !rato.jumping) {
+        rato.vy = -20;
+        rato.jumping = true;
+      }
+    });
+
+    loop();
+  </script>
 </body>
 </html>
