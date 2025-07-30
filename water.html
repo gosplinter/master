@@ -1,183 +1,370 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HidrataX Quest 🚀💧</title>
-  <style>
+
+
+
+  
+  
+  HidrataX Pac-Man
+  
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Orbitron', sans-serif;
     }
 
-    body {
-      background: linear-gradient(135deg, #1a0933, #4b0082);
-      color: #e0e0ff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-      overflow-x: hidden;
-    }
+<pre><code>body {
+  background: #000000;
+  color: #FFFFFF;
+  min-height: 100vh;
+  padding: 20px;
+  overflow-x: hidden;
+  position: relative;
+  font-family: &#39;Arcade Classic&#39;, monospace;
+}
 
-    h1 {
-      font-size: 3rem;
-      text-shadow: 0 0 20px #00d4ff;
-      margin-bottom: 20px;
-      animation: glow 2s ease-in-out infinite alternate;
-    }
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
 
-    @keyframes glow {
-      from { text-shadow: 0 0 10px #00d4ff; }
-      to { text-shadow: 0 0 20px #00d4ff, 0 0 30px #ff00ff; }
-    }
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
-    .tracker {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-      padding: 30px;
-      width: 100%;
-      max-width: 600px;
-      text-align: center;
-      box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
-      margin-bottom: 20px;
-    }
+h1 {
+  font-family: &#39;Press Start 2P&#39;, monospace;
+  font-size: 2.5rem;
+  color: #FFFF00;
+  text-shadow: 0 0 8px #FFFF00, 0 0 16px #FF0000;
+}
 
-    input {
-      padding: 10px;
-      margin: 5px;
-      border: 1px solid #00d4ff;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-      width: 100px;
-      font-size: 1rem;
-    }
+.main {
+  display: flex;
+  gap: 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-    button {
-      background: linear-gradient(45deg, #ff00ff, #00d4ff);
-      color: #fff;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 25px;
-      cursor: pointer;
-      margin: 10px;
-      font-size: 1.1rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+.tracker {
+  background: #0000FF;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  max-width: 350px;
+  text-align: center;
+  border: 2px solid #FFFF00;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
 
-    button:hover {
-      transform: scale(1.1);
-      box-shadow: 0 0 20px #00d4ff;
-    }
+input {
+  padding: 10px;
+  margin: 8px;
+  border: 2px solid #FFFF00;
+  border-radius: 8px;
+  background: #000000;
+  color: #FFFFFF;
+  font-family: &#39;Arcade Classic&#39;, monospace;
+  font-size: 1.2rem;
+  width: 140px;
+}
 
-    .stats {
-      font-size: 1.2rem;
-      margin-top: 20px;
-      text-shadow: 0 0 10px #00d4ff;
-    }
+button {
+  background: linear-gradient(45deg, #FF0000, #FF5555);
+  color: #FFFFFF;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: &#39;Arcade Classic&#39;, monospace;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    canvas {
-      border: 2px solid #00d4ff;
-      border-radius: 10px;
-      background: radial-gradient(circle, #1a0933, #000);
-      margin-top: 20px;
-      max-width: 100%;
-    }
+button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 12px #FF0000;
+}
 
-    .leaderboard {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 20px;
-      width: 100%;
-      max-width: 600px;
-      margin-top: 20px;
-      color: #e0e0ff;
-    }
+.stats {
+  font-size: 1.2rem;
+  margin-top: 15px;
+  color: #00FF00;
+  line-height: 1.6;
+  text-shadow: 0 0 4px #00FF00;
+}
 
-    .leaderboard h2 {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-    }
+canvas {
+  border: 2px solid #FFFF00;
+  background: #000000;
+  margin-top: 20px;
+  max-width: 100%;
+  display: none;
+  border-radius: 8px;
+  box-shadow: 0 0 16px rgba(255, 255, 0, 0.5);
+}
 
-    .leaderboard ul {
-      list-style: none;
-    }
+canvas.active {
+  display: block;
+}
 
-    .leaderboard li {
-      padding: 10px;
-      border-bottom: 1px solid #00d4ff;
-    }
+.controls {
+  display: none;
+  margin-top: 15px;
+  gap: 12px;
+  justify-content: center;
+}
 
-    @media (max-width: 600px) {
-      h1 { font-size: 2rem; }
-      .tracker { padding: 20px; }
-      input { width: 80px; }
-      canvas { width: 100%; height: auto; }
-    }
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <h1>HidrataX Quest 🚀💧</h1>
-  <div class="tracker">
-    <div>
-      <label for="ml">ML por dose:</label>
-      <input type="number" id="ml" value="250" aria-describedby="ml-desc">
-      <span id="ml-desc" class="sr-only">Volume de água por dose em mililitros</span>
-    </div>
-    <button onclick="beberAgua()">Beber Água 💦</button>
-    <button onclick="reiniciarJogo()">Reiniciar Missão</button>
-    <div class="stats" id="status"></div>
-  </div>
-  <canvas id="gameCanvas"></canvas>
-  <div class="leaderboard">
-    <h2>Ranking Intergaláctico</h2>
-    <ul id="leaderboard"></ul>
-  </div>
+.controls button {
+  width: 80px;
+  height: 80px;
+  font-size: 1.8rem;
+  background: linear-gradient(45deg, #FF00FF, #FF55FF);
+  border: 2px solid #FFFF00;
+}
 
-  <script>
+.controls button:hover {
+  box-shadow: 0 0 12px #FF00FF;
+}
+
+/* Estilos para Web */
+@media (min-width: 768px) {
+  h1 {
+    font-size: 3.5rem;
+    animation: neon 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes neon {
+    from { text-shadow: 0 0 8px #FFFF00, 0 0 16px #FF0000, 0 0 24px #FF0000; }
+    to { text-shadow: 0 0 12px #FFFF00, 0 0 24px #FF0000, 0 0 36px #FF0000; }
+  }
+  .main {
+    flex-wrap: nowrap;
+  }
+  .tracker {
+    max-width: 320px;
+  }
+  canvas {
+    width: 640px;
+    height: 480px;
+  }
+  .stars {
+    background: linear-gradient(180deg, #000000 0%, rgba(0, 0, 0, 0.8) 100%);
+  }
+}
+
+/* Estilos para Mobile */
+@media (max-width: 767px) {
+  h1 {
+    font-size: 2rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .main {
+    flex-direction: column;
+    align-items: center;
+  }
+  .tracker {
+    max-width: 100%;
+  }
+  canvas {
+    width: 100%;
+    height: 300px;
+  }
+  .controls {
+    display: flex;
+  }
+}
+
+@media (max-width: 400px) {
+  input {
+    width: 120px;
+    font-size: 1rem;
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+  .controls button {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+}
+</code></pre>
+<p>    
+
+
+  
+  
+    HidrataX Pac-Man
+  
+  
+    
+      
+        ML por dose:
+        
+        Volume de água por dose em mililitros
+      
+      Beber Água 💧
+      
+      
+        ↑
+        ↓
+        ←
+        →
+      
+    
+    
+  
+
+  
     // Configuração inicial
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const statusEl = document.getElementById('status');
-    const leaderboardEl = document.getElementById('leaderboard');
 
     // Ajuste responsivo do canvas
     function ajustarCanvas() {
-      canvas.width = Math.min(600, window.innerWidth - 40);
-      canvas.height = canvas.width * 0.5;
+      canvas.width = Math.min(640, window.innerWidth - 40);
+      canvas.height = canvas.width * 0.75;
+      ajustarLabirinto();
     }
     window.addEventListener('resize', ajustarCanvas);
+
+    // Estado do jogo
+    const mapaBase = [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+      [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+      [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+      [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+      [1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+    let cellSize, offsetX, offsetY;
+    function ajustarLabirinto() {
+      cellSize = Math.min(canvas.width / mapaBase[0].length, canvas.height / mapaBase.length);
+      offsetX = (canvas.width - mapaBase[0].length * cellSize) / 2;
+      offsetY = (canvas.height - mapaBase.length * cellSize) / 2;
+    }
     ajustarCanvas();
+
+    // Estrelas de fundo
+    const starsCanvas = document.createElement('canvas');
+    starsCanvas.width = window.innerWidth;
+    starsCanvas.height = window.innerHeight;
+    document.getElementById('stars').appendChild(starsCanvas);
+    const starsCtx = starsCanvas.getContext('2d');
+    const coresAtari = ['#FFFF00', '#00FF00', '#00FFFF', '#FF00FF'];
+    const estrelas = [];
+    for (let i = 0; i < 50; i++) {
+      estrelas.push({
+        x: Math.random() * starsCanvas.width,
+        y: Math.random() * starsCanvas.height,
+        size: Math.random() * 2 + 1,
+        speed: Math.random() * 0.3 + 0.2,
+        color: coresAtari[Math.floor(Math.random() * coresAtari.length)]
+      });
+    }
+    function animarEstrelas() {
+      starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+      estrelas.forEach(estrela => {
+        starsCtx.fillStyle = estrela.color;
+        starsCtx.beginPath();
+        starsCtx.arc(estrela.x, estrela.y, estrela.size, 0, Math.PI * 2);
+        starsCtx.fill();
+        estrela.x -= estrela.speed * (window.innerWidth > 767 ? 0.6 : 0.3);
+        if (estrela.x < 0) {
+          estrela.x = starsCanvas.width;
+          estrela.color = coresAtari[Math.floor(Math.random() * coresAtari.length)];
+        }
+      });
+      requestAnimationFrame(animarEstrelas);
+    }
+    animarEstrelas();
 
     // Dados persistentes
     const hoje = new Date().toLocaleDateString();
     let dados = JSON.parse(localStorage.getItem('hidrataX')) || {};
-    if (!dados[hoje]) dados[hoje] = { agua: 0, pontos: 0, vidas: 3 };
+    if (!dados[hoje]) dados[hoje] = { agua: 0, pontos: 0, vidas: 0 };
     let vidas = dados[hoje].vidas;
     let aguaHoje = dados[hoje].agua;
     let pontos = dados[hoje].pontos;
-
-    // Estado do jogo
-    let nave = { x: 50, y: canvas.height - 50, w: 40, h: 20, vy: 0, jumping: false };
-    let planetas = [];
     let gameOver = false;
-    let velocidade = 4;
-    let estrelas = [];
+    let canPlay = vidas > 0;
+    let feedbackText = '';
+    let feedbackTimer = 0;
 
-    // Ranking
-    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-    function atualizarLeaderboard() {
-      leaderboard.push({ nome: `Explorador${Math.floor(Math.random() * 1000)}`, pontos });
-      leaderboard.sort((a, b) => b.pontos - a.pontos);
-      leaderboard = leaderboard.slice(0, 5);
-      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-      leaderboardEl.innerHTML = leaderboard.map(p => `<li>${p.nome}: ${p.pontos} pontos</li>`).join('');
+    // Estado do Pac-Man
+    let pacman = {
+      x: 1.5,
+      y: 1.5,
+      size: 0.4,
+      vx: 0,
+      vy: 0,
+      speed: 0.1,
+      angle: 0,
+      mouth: 0
+    };
+    let fantasmas = [
+      { x: 9, y: 7, vx: 0, vy: 0, color: '#FF0000', blink: 0, lastDir: null },
+      { x: 10, y: 7, vx: 0, vy: 0, color: '#00FF00', blink: 0, lastDir: null },
+      { x: 9, y: 8, vx: 0, vy: 0, color: '#00FFFF', blink: 0, lastDir: null },
+      { x: 10, y: 8, vx: 0, vy: 0, color: '#FF00FF', blink: 0, lastDir: null }
+    ];
+    let bolinhas = [];
+    let frutas = [];
+    let controles = { up: false, down: false, left: false, right: false };
+
+    // Função para encontrar direções válidas
+    function direcoesValidas(x, y, lastDir) {
+      const direcoes = [];
+      if (y > 0 && mapaBase[y - 1][x] === 0 && lastDir !== 'down') direcoes.push({ vx: 0, vy: -0.075, dir: 'up' });
+      if (y < mapaBase.length - 1 && mapaBase[y + 1][x] === 0 && lastDir !== 'up') direcoes.push({ vx: 0, vy: 0.075, dir: 'down' });
+      if (x > 0 && mapaBase[y][x - 1] === 0 && lastDir !== 'right') direcoes.push({ vx: -0.075, vy: 0, dir: 'left' });
+      if (x < mapaBase[0].length - 1 && mapaBase[y][x + 1] === 0 && lastDir !== 'left') direcoes.push({ vx: 0.075, vy: 0, dir: 'right' });
+      return direcoes;
+    }
+
+    // Inicializar bolinhas e frutas
+    function resetPacman() {
+      pacman.x = 1.5;
+      pacman.y = 1.5;
+      pacman.vx = 0;
+      pacman.vy = 0;
+      pacman.angle = 0;
+      fantasmas = [
+        { x: 9, y: 7, vx: 0, vy: 0, color: '#FF0000', blink: 0, lastDir: null },
+        { x: 10, y: 7, vx: 0, vy: 0, color: '#00FF00', blink: 0, lastDir: null },
+        { x: 9, y: 8, vx: 0, vy: 0, color: '#00FFFF', blink: 0, lastDir: null },
+        { x: 10, y: 8, vx: 0, vy: 0, color: '#FF00FF', blink: 0, lastDir: null }
+      ];
+      bolinhas = [];
+      frutas = [];
+      const frutasEmojis = ['🍎', '🍐', '🍊', '🍇'];
+      for (let y = 0; y < mapaBase.length; y++) {
+        for (let x = 0; x < mapaBase[0].length; x++) {
+          if (mapaBase[y][x] === 0) {
+            bolinhas.push({ x: x + 0.5, y: y + 0.5, size: 0.15 });
+            if (Math.random() < 0.05 && !(x === 1 && y === 1)) {
+              frutas.push({ x: x + 0.5, y: y + 0.5, emoji: frutasEmojis[Math.floor(Math.random() * frutasEmojis.length)] });
+            }
+          }
+        }
+      }
     }
 
     // Função de hidratação
@@ -189,164 +376,240 @@
       }
       aguaHoje += ml;
       pontos += Math.floor(ml / 100);
-      vidas = Math.min(vidas + 1, 5); // Máximo de 5 vidas
+      vidas = Math.min(vidas + 1, 5);
+      canPlay = true;
+      gameOver = false;
+      canvas.classList.add('active');
+      resetPacman();
       dados[hoje] = { agua: aguaHoje, pontos, vidas };
       localStorage.setItem('hidrataX', JSON.stringify(dados));
       atualizarStatus();
-      atualizarLeaderboard();
-      spawnPlaneta();
+      if (canPlay && !gameOver) loop();
     }
 
     function atualizarStatus() {
       statusEl.innerHTML = `
-        Missão de Hoje: ${aguaHoje / 1000} L<br>
         Pontos: ${pontos}<br>
+        Água: ${aguaHoje / 1000} L<br>
         Vidas: ${'❤️'.repeat(vidas)}
       `;
+      canvas.classList.toggle('active', canPlay && !gameOver);
     }
 
-    // Jogo
-    function spawnPlaneta() {
-      planetas.push({
-        x: canvas.width,
-        y: Math.random() * (canvas.height - 50),
-        w: 30,
-        h: 30,
-        type: Math.random() > 0.7 ? 'agua' : 'rocha'
-      });
-    }
-
-    function criarEstrelas() {
-      for (let i = 0; i < 50; i++) {
-        estrelas.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 2 + 1
-        });
-      }
-    }
-
+    // Loop do jogo
     function loop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Fundo estelar
-      ctx.fillStyle = '#fff';
-      estrelas.forEach(estrela => {
-        ctx.beginPath();
-        ctx.arc(estrela.x, estrela.y, estrela.size, 0, Math.PI * 2);
-        ctx.fill();
-        estrela.x -= 0.5;
-        if (estrela.x < 0) estrela.x = canvas.width;
-      });
-
-      // Nave
-      ctx.fillStyle = '#00d4ff';
-      ctx.beginPath();
-      ctx.moveTo(nave.x, nave.y + nave.h);
-      ctx.lineTo(nave.x + nave.w, nave.y);
-      ctx.lineTo(nave.x, nave.y - nave.h);
-      ctx.fill();
-
-      // Planetas
-      planetas.forEach(p => {
-        ctx.fillStyle = p.type === 'agua' ? '#00b4d8' : '#8d5524';
-        ctx.beginPath();
-        ctx.arc(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, 0, Math.PI * 2);
-        ctx.fill();
-        p.x -= velocidade;
-      });
-      planetas = planetas.filter(p => p.x > -p.w);
-
-      // Gravidade
-      nave.vy += 0.8;
-      nave.y += nave.vy;
-      if (nave.y > canvas.height - nave.h) {
-        nave.y = canvas.height - nave.h;
-        nave.vy = 0;
-        nave.jumping = false;
-      }
-      if (nave.y < nave.h) {
-        nave.y = nave.h;
-        nave.vy = 0;
-      }
-
-      // Colisão
-      planetas.forEach(p => {
-        if (
-          nave.x < p.x + p.w &&
-          nave.x + nave.w > p.x &&
-          nave.y - nave.h < p.y + p.h &&
-          nave.y + nave.h > p.y
-        ) {
-          if (p.type === 'agua') {
-            pontos += 10;
-            aguaHoje += 100;
-            dados[hoje].agua = aguaHoje;
-            dados[hoje].pontos = pontos;
-            localStorage.setItem('hidrataX', JSON.stringify(dados));
-            atualizarStatus();
-            atualizarLeaderboard();
-          } else {
-            if (vidas > 0) {
-              vidas--;
-              dados[hoje].vidas = vidas;
-              localStorage.setItem('hidrataX', JSON.stringify(dados));
-              atualizarStatus();
-            } else {
-              gameOver = true;
-            }
-          }
-          planetas = planetas.filter(planet => planet !== p);
-        }
-      });
-
-      // Dificuldade dinâmica
-      velocidade = 4 + pontos / 100;
-
-      // Game Over
-      if (gameOver) {
-        ctx.fillStyle = '#ff00ff';
-        ctx.font = '30px Orbitron';
-        ctx.fillText('Missão Falhou!', canvas.width / 2 - 100, canvas.height / 2);
+      if (!canPlay || gameOver) {
+        canvas.classList.remove('active');
         return;
       }
 
-      atualizarStatus();
-      if (Math.random() < 0.02) spawnPlaneta();
-      requestAnimationFrame(loop);
-    }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    function reiniciarJogo() {
-      vidas = 3;
-      pontos = 0;
-      aguaHoje = 0;
-      gameOver = false;
-      planetas = [];
-      nave.y = canvas.height - 50;
-      nave.vy = 0;
-      nave.jumping = false;
-      velocidade = 4;
-      dados[hoje] = { agua: 0, pontos: 0, vidas: 3 };
-      localStorage.setItem('hidrataX', JSON.stringify(dados));
-      atualizarStatus();
-      atualizarLeaderboard();
-      loop();
+      // Desenhar labirinto
+      ctx.fillStyle = '#0000FF';
+      for (let y = 0; y < mapaBase.length; y++) {
+        for (let x = 0; x < mapaBase[0].length; x++) {
+          if (mapaBase[y][x] === 1) {
+            ctx.fillRect(offsetX + x * cellSize, offsetY + y * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+
+      // Desenhar bolinhas
+      ctx.fillStyle = '#FFFF00';
+      bolinhas.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(offsetX + b.x * cellSize, offsetY + b.y * cellSize, b.size * cellSize, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Desenhar frutas
+      ctx.font = `${cellSize * 0.5}px Arial`;
+      frutas.forEach(f => {
+        ctx.fillStyle = '#FF00FF';
+        ctx.fillText(f.emoji, offsetX + f.x * cellSize - cellSize * 0.3, offsetY + f.y * cellSize + cellSize * 0.2);
+      });
+
+      // Desenhar Pac-Man
+      ctx.fillStyle = '#FFFF00';
+      ctx.beginPath();
+      pacman.mouth = Math.sin(Date.now() / 80) * 0.5 + 0.5;
+      ctx.arc(offsetX + pacman.x * cellSize, offsetY + pacman.y * cellSize, pacman.size * cellSize, pacman.angle + pacman.mouth, pacman.angle + 2 * Math.PI - pacman.mouth);
+      ctx.lineTo(offsetX + pacman.x * cellSize, offsetY + pacman.y * cellSize);
+      ctx.fill();
+
+      // Desenhar e mover fantasmas
+      fantasmas.forEach(f => {
+        // Movimento dos fantasmas
+        if (Math.abs(f.x - Math.round(f.x)) < 0.005 && Math.abs(f.y - Math.round(f.y)) < 0.005) {
+          f.x = Math.round(f.x);
+          f.y = Math.round(f.y);
+          const direcoes = direcoesValidas(f.x, f.y, f.lastDir);
+          if (direcoes.length > 0) {
+            let dx = pacman.x - f.x;
+            let dy = pacman.y - f.y;
+            let bestDir = direcoes[0];
+            let minDist = Infinity;
+            direcoes.forEach(dir => {
+              let newX = f.x + dir.vx;
+              let newY = f.y + dir.vy;
+              let dist = Math.hypot(pacman.x - newX, pacman.y - newY);
+              if (dist < minDist) {
+                minDist = dist;
+                bestDir = dir;
+              }
+            });
+            let chosenDir = Math.random() < 0.8 ? bestDir : direcoes[Math.floor(Math.random() * direcoes.length)];
+            f.vx = chosenDir.vx;
+            f.vy = chosenDir.vy;
+            f.lastDir = chosenDir.dir;
+          } else {
+            f.vx = 0;
+            f.vy = 0;
+            f.lastDir = null;
+          }
+        }
+        f.x += f.vx;
+        f.y += f.vy + Math.sin(Date.now() / 200) * 0.015;
+        f.blink = (f.blink + 0.05) % 1;
+        ctx.fillStyle = f.color;
+        ctx.beginPath();
+        ctx.arc(offsetX + f.x * cellSize, offsetY + f.y * cellSize, 0.4 * cellSize, 0, Math.PI);
+        ctx.lineTo(offsetX + (f.x + 0.4) * cellSize, offsetY + (f.y + 0.4) * cellSize);
+        ctx.lineTo(offsetX + (f.x - 0.4) * cellSize, offsetY + (f.y + 0.4) * cellSize);
+        ctx.fill();
+        ctx.fillStyle = f.blink < 0.8 ? '#FFFFFF' : '#000000';
+        ctx.fillRect(offsetX + (f.x - 0.25) * cellSize, offsetY + (f.y - 0.1) * cellSize, 0.12 * cellSize, 0.12 * cellSize);
+        ctx.fillRect(offsetX + (f.x + 0.1) * cellSize, offsetY + (f.y - 0.1) * cellSize, 0.12 * cellSize, 0.12 * cellSize);
+      });
+
+      // Movimento do Pac-Man
+      let novoX = pacman.x + pacman.vx;
+      let novoY = pacman.y + pacman.vy;
+      let cellX = Math.floor(novoX);
+      let cellY = Math.floor(novoY);
+      if (cellX >= 0 && cellX < mapaBase[0].length && cellY >= 0 && cellY < mapaBase.length && mapaBase[cellY][cellX] === 0) {
+        pacman.x = novoX;
+        pacman.y = novoY;
+      }
+      if (controles.up && mapaBase[Math.floor(pacman.y - 0.5)][Math.floor(pacman.x)] === 0) {
+        pacman.vx = 0;
+        pacman.vy = -pacman.speed;
+        pacman.angle = Math.PI * 1.5;
+      } else if (controles.down && mapaBase[Math.floor(pacman.y + 0.5)][Math.floor(pacman.x)] === 0) {
+        pacman.vx = 0;
+        pacman.vy = pacman.speed;
+        pacman.angle = Math.PI * 0.5;
+      } else if (controles.left && mapaBase[Math.floor(pacman.y)][Math.floor(pacman.x - 0.5)] === 0) {
+        pacman.vx = -pacman.speed;
+        pacman.vy = 0;
+        pacman.angle = Math.PI;
+      } else if (controles.right && mapaBase[Math.floor(pacman.y)][Math.floor(pacman.x + 0.5)] === 0) {
+        pacman.vx = pacman.speed;
+        pacman.vy = 0;
+        pacman.angle = 0;
+      } else {
+        if (Math.abs(pacman.x - Math.round(pacman.x)) < 0.005 && Math.abs(pacman.y - Math.round(pacman.y)) < 0.005) {
+          pacman.x = Math.round(pacman.x);
+          pacman.y = Math.round(pacman.y);
+          pacman.vx = 0;
+          pacman.vy = 0;
+        }
+      }
+
+      // Colisão com bolinhas
+      bolinhas.forEach(b => {
+        if (Math.hypot(pacman.x - b.x, pacman.y - b.y) < (pacman.size + b.size) / 2) {
+          bolinhas = bolinhas.filter(bol => bol !== b);
+          pontos += 1;
+          aguaHoje += 10;
+          dados[hoje].agua = aguaHoje;
+          dados[hoje].pontos = pontos;
+          localStorage.setItem('hidrataX', JSON.stringify(dados));
+          feedbackText = 'Waka Waka';
+          feedbackTimer = 60;
+          atualizarStatus();
+        }
+      });
+
+      // Colisão com frutas
+      frutas.forEach(f => {
+        if (Math.hypot(pacman.x - f.x, pacman.y - f.y) < pacman.size / 2 + 0.4) {
+          frutas = frutas.filter(fruta => fruta !== f);
+          pontos += 5;
+          aguaHoje += 50;
+          dados[hoje].agua = aguaHoje;
+          dados[hoje].pontos = pontos;
+          localStorage.setItem('hidrataX', JSON.stringify(dados));
+          feedbackText = 'Fruta!';
+          feedbackTimer = 60;
+          atualizarStatus();
+        }
+      });
+
+      // Colisão com fantasmas
+      fantasmas.forEach(f => {
+        if (Math.hypot(pacman.x - f.x, pacman.y - f.y) < pacman.size / 2 + 0.4) {
+          vidas--;
+          dados[hoje].vidas = vidas;
+          localStorage.setItem('hidrataX', JSON.stringify(dados));
+          atualizarStatus();
+          if (vidas <= 0) {
+            gameOver = true;
+            canPlay = false;
+          } else {
+            resetPacman();
+          }
+        }
+      });
+
+      // Completar nível
+      if (bolinhas.length === 0) {
+        resetPacman();
+      }
+
+      // Feedback visual
+      if (feedbackTimer > 0) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = `${cellSize * 0.5}px Arcade Classic`;
+        ctx.fillText(feedbackText, canvas.width / 2 - cellSize * 1.5, cellSize);
+        feedbackTimer--;
+      }
+
+      // Game Over
+      if (gameOver) {
+        ctx.fillStyle = '#FFFF00';
+        ctx.font = `${cellSize * 0.8}px Arcade Classic`;
+        ctx.fillText('Jogo Encerrado', canvas.width / 2 - cellSize * 4, canvas.height / 2);
+        canvas.classList.remove('active');
+        return;
+      }
+
+      requestAnimationFrame(loop);
     }
 
     // Controles
     document.addEventListener('keydown', e => {
-      if (e.code === 'Space' && !nave.jumping) {
-        nave.vy = -15;
-        nave.jumping = true;
-      }
+      if (!canPlay) return;
+      if (e.code === 'KeyW') controles.up = true;
+      if (e.code === 'KeyS') controles.down = true;
+      if (e.code === 'KeyA') controles.left = true;
+      if (e.code === 'KeyD') controles.right = true;
+    });
+
+    document.addEventListener('keyup', e => {
+      if (e.code === 'KeyW') controles.up = false;
+      if (e.code === 'KeyS') controles.down = false;
+      if (e.code === 'KeyA') controles.left = false;
+      if (e.code === 'KeyD') controles.right = false;
     });
 
     // Inicialização
-    criarEstrelas();
-    spawnPlaneta();
+    resetPacman();
     atualizarStatus();
-    atualizarLeaderboard();
-    loop();
-  </script>
-</body>
-</html>
+    if (canPlay && !gameOver) {
+      canvas.classList.add('active');
+      loop();
+    }
+  
+
