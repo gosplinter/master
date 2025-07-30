@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodTrack - Rastreador de Humor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2980b9;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #ecf0f1;
+            --bg: #34495e;
+            --card: #2c3e50;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --light-bg: #f5f6f5;
+            --light-text: #2c3e50;
+            --light-card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.light-mode {
+            --bg: var(--light-bg);
+            --text: var(--light-text);
+            --card: var(--light-card);
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .toggle-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px var(--shadow);
+            transition: background-color 0.3s;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background-color: var(--dark);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .mood-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--dark);
+            background-color: var(--bg);
+            color: var(--text);
+            flex: 1;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--dark);
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 24px;
+        }
+
+        .quick-btn:hover {
+            background-color: var(--primary);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: var(--dark);
+            text-align: center;
+            transition: background-color 0.3s, opacity 0.5s;
+            opacity: 1;
+        }
+
+        .message.hidden {
+            opacity: 0;
+        }
+
+        .positive {
+            border-left: 5px solid var(--success);
+        }
+
+        .negative {
+            border-left: 5px solid var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>😊 MoodTrack</h1>
+            <button class="toggle-btn" id="theme-toggle" aria-label="Alternar entre modo claro e escuro">Modo Claro</button>
+        </header>
+
+        <div class="card">
+            <h2>Seu Humor Hoje</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="mood-progress">0%</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="today-mood">-</div>
+                    <div>Humor Atual</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="weekly-positive">0</div>
+                    <div>Dias Positivos</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="weekly-entries">0</div>
+                    <div>Registros</div>
+                </div>
+            </div>
+
+            <div class="mood-input">
+                <select id="mood-level" aria-label="Nível de humor">
+                    <option value="5">😊 Excelente</option>
+                    <option value="4">🙂 Bom</option>
+                    <option value="3" selected>😐 Neutro</option>
+                    <option value="2">😔 Triste</option>
+                    <option value="1">😣 Péssimo</option>
+                </select>
+                <textarea id="mood-notes" placeholder="Notas sobre o dia (opcional)" aria-label="Notas sobre o humor"></textarea>
+                <button id="add-mood-btn" aria-label="Adicionar humor">✓</button>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-btn" data-mood="5" role="button" tabindex="0" aria-label="Registrar humor Excelente">😊</div>
+                <div class="quick-btn" data-mood="4" role="button" tabindex="0" aria-label="Registrar humor Bom">🙂</div>
+                <div class="quick-btn" data-mood="3" role="button" tabindex="0" aria-label="Registrar humor Neutro">😐</div>
+                <div class="quick-btn" data-mood="2" role="button" tabindex="0" aria-label="Registrar humor Triste">😔</div>
+                <div class="quick-btn" data-mood="1" role="button" tabindex="0" aria-label="Registrar humor Péssimo">😣</div>
+            </div>
+
+            <div id="message-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>Tendência Semanal de Humor</h2>
+            <div class="chart-container">
+                <canvas id="mood-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Configurações</h2>
+            <div style="margin-bottom: 15px;">
+                <label for="positive-goal">Meta de dias positivos por semana:</label>
+                <input type="number" id="positive-goal" min="1" max="7" value="5" style="width: 100%; margin-top: 5px;" aria-label="Meta de dias positivos por semana">
+            </div>
+            <button id="save-settings-btn" style="width: 100%;" aria-label="Salvar configurações">Salvar Configurações</button>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const settings = {
+            positiveGoal: 5, // Meta de dias positivos por semana
+            darkMode: true
+        };
+
+        // Dados
+        let moodData = {
+            today: {
+                date: new Date().toLocaleDateString('pt-BR'),
+                mood: null,
+                notes: '',
+                entries: []
+            },
+            history: []
+        };
+
+        // Gráficos
+        let moodChart;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setupEventListeners();
+            updateUI();
+            renderChart();
+        });
+
+        // Carrega dados do localStorage
+        function loadData() {
+            const savedSettings = localStorage.getItem('moodTrackSettings');
+            if (savedSettings) {
+                Object.assign(settings, JSON.parse(savedSettings));
+                document.getElementById('positive-goal').value = settings.positiveGoal;
+                
+                if (!settings.darkMode) {
+                    toggleTheme();
+                }
+            }
+            
+            const savedMoodData = localStorage.getItem('moodTrackData');
+            if (savedMoodData) {
+                const parsedData = JSON.parse(savedMoodData);
+                
+                if (parsedData.today && parsedData.history) {
+                    moodData = parsedData;
+                    
+                    const today = new Date().toLocaleDateString('pt-BR');
+                    if (moodData.today.date !== today) {
+                        if (moodData.today.entries.length > 0) {
+                            moodData.history.push(moodData.today);
+                        }
+                        
+                        moodData.today = {
+                            date: today,
+                            mood: null,
+                            notes: '',
+                            entries: []
+                        };
+                        
+                        moodData.history = moodData.history.slice(-30); // Limitar a 30 dias
+                        saveData();
+                    }
+                }
+            }
+        }
+
+        // Salva dados no localStorage
+        function saveData() {
+            localStorage.setItem('moodTrackSettings', JSON.stringify(settings));
+            localStorage.setItem('moodTrackData', JSON.stringify(moodData));
+        }
+
+        // Configura eventos
+        function setupEventListeners() {
+            document.getElementById('add-mood-btn').addEventListener('click', addMoodFromInput);
+            
+            document.querySelectorAll('.quick-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const mood = parseInt(btn.getAttribute('data-mood'));
+                    addMood(mood, '');
+                });
+                btn.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        const mood = parseInt(btn.getAttribute('data-mood'));
+                        addMood(mood, '');
+                    }
+                });
+            });
+            
+            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            document.getElementById('mood-level').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addMoodFromInput();
+                }
+            });
+        }
+
+        // Adiciona humor a partir do input
+        function addMoodFromInput() {
+            const moodInput = document.getElementById('mood-level');
+            const mood = parseInt(moodInput.value);
+            const notes = document.getElementById('mood-notes').value.trim();
+            
+            if (isNaN(mood) || mood < 1 || mood > 5) {
+                showMessage("Selecione um humor válido!", "negative");
+                return;
+            }
+            
+            addMood(mood, notes);
+            moodInput.value = '3'; // Volta para Neutro
+            document.getElementById('mood-notes').value = '';
+        }
+
+        // Adiciona humor ao registro
+        function addMood(mood, notes) {
+            moodData.today.mood = mood;
+            moodData.today.entries.push({
+                time: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                mood: mood,
+                notes: notes
+            });
+            
+            saveData();
+            updateUI();
+            renderChart();
+            showMotivationalMessage();
+        }
+
+        // Atualiza a interface
+        function updateUI() {
+            const moodLabels = {
+                5: '😊 Excelente',
+                4: '🙂 Bom',
+                3: '😐 Neutro',
+                2: '😔 Triste',
+                1: '😣 Péssimo'
+            };
+            
+            // Calcula progresso com base em dias positivos na semana
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - 6);
+            const weekData = moodData.history
+                .filter(d => new Date(d.date.split('/').reverse().join('-')) >= weekStart)
+                .concat(moodData.today.entries.length > 0 ? [moodData.today] : []);
+            
+            const positiveDays = weekData.filter(d => d.mood >= 4).length;
+            const totalEntries = weekData.length;
+            const percentage = Math.min(Math.round((positiveDays / settings.positiveGoal) * 100), 100);
+            
+            document.getElementById('mood-progress').style.width = `${percentage}%`;
+            document.getElementById('mood-progress').textContent = `${percentage}%`;
+            document.getElementById('today-mood').textContent = moodData.today.mood ? moodLabels[moodData.today.mood] : '-';
+            document.getElementById('weekly-positive').textContent = positiveDays;
+            document.getElementById('weekly-entries').textContent = totalEntries;
+        }
+
+        // Renderiza o gráfico
+        function renderChart() {
+            const ctx = document.getElementById('mood-chart').getContext('2d');
+            
+            const days = [];
+            const labels = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString('pt-BR');
+                
+                labels.push(date.toLocaleDateString('pt-BR', {weekday: 'short'}));
+                
+                if (dateStr === moodData.today.date) {
+                    days.push(moodData.today.mood || 0);
+                } else {
+                    const dayData = moodData.history.find(d => d.date === dateStr);
+                    days.push(dayData && dayData.mood ? dayData.mood : 0);
+                }
+            }
+            
+            if (moodChart) {
+                moodChart.destroy();
+            }
+            
+            moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Humor',
+                        data: days,
+                        borderColor: 'var(--primary)',
+                        backgroundColor: days.map(mood => 
+                            mood >= 4 ? 'var(--success)' : 
+                            mood >= 2 ? 'var(--primary)' : 
+                            'var(--danger)'
+                        ),
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: days.map(mood => 
+                            mood >= 4 ? 'var(--success)' : 
+                            mood >= 2 ? 'var(--primary)' : 
+                            'var(--danger)'
+                        )
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: value => {
+                                    const moodLabels = {5: '😊', 4: '🙂', 3: '😐', 2: '😔', 1: '😣', 0: '-'};
+                                    return moodLabels[value];
+                                },
+                                color: settings.darkMode ? 'var(--text)' : 'var(--light-text)'
+                            },
+                            grid: {
+                                color: settings.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: settings.darkMode ? 'var(--text)' : 'var(--light-text)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Mostra mensagem motivacional
+        function showMotivationalMessage() {
+            const mood = moodData.today.mood;
+            const container = document.getElementById('message-container');
+            
+            let message = '';
+            let type = '';
+            
+            if (mood >= 4) {
+                message = 'Que ótimo te ver assim! Continue espalhando essa energia! 🌟';
+                type = 'positive';
+            } else if (mood === 3) {
+                message = 'Tudo bem estar neutro! Que tal algo para animar o dia? 😊';
+                type = '';
+            } else if (mood > 0) {
+                message = 'Dias difíceis passam. Cuide de você e amanhã será melhor! 💙';
+                type = 'negative';
+            } else {
+                message = 'Registre seu humor hoje! Como você está se sentindo? 🤔';
+                type = 'negative';
+            }
+            
+            showMessage(message, type);
+        }
+
+        // Salva configurações
+        function saveSettings() {
+            const newGoal = parseInt(document.getElementById('positive-goal').value);
+            
+            if (isNaN(newGoal) || newGoal < 1 || newGoal > 7) {
+                showMessage("Meta inválida! Insira um valor entre 1 e 7 dias.", "negative");
+                return;
+            }
+            
+            settings.positiveGoal = newGoal;
+            saveData();
+            updateUI();
+            renderChart();
+            
+            showMessage("Configurações salvas!", "positive");
+        }
+
+        // Alterna tema
+        function toggleTheme() {
+            settings.darkMode = !settings.darkMode;
+            document.body.classList.toggle('light-mode');
+            
+            document.getElementById('theme-toggle').textContent = settings.darkMode ? 'Modo Claro' : 'Modo Escuro';
+            
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                el.style.backgroundColor = settings.darkMode ? 'var(--bg)' : 'var(--light-bg)';
+                el.style.color = settings.darkMode ? 'var(--text)' : 'var(--light-text)';
+                el.style.borderColor = settings.darkMode ? 'var(--dark)' : 'var(--light-text)';
+            });
+            
+            saveData();
+            renderChart();
+        }
+
+        // Mostra mensagem
+        function showMessage(text, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `
+                <div class="message ${type}">
+                    ${text}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const message = container.querySelector('.message');
+                if (message) {
+                    message.classList.add('hidden');
+                    setTimeout(() => {
+                        container.innerHTML = '';
+                    }, 500);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
