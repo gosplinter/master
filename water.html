@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Hidratação Inteligente 💧</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: #f0f8ff;
+    }
+    h1 {
+      color: #0077cc;
+    }
+    .counter {
+      font-size: 1.5rem;
+      margin: 1rem 0;
+    }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      margin: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #00bfff;
+      color: white;
+      cursor: pointer;
+    }
+    input {
+      font-size: 1rem;
+      padding: 0.5rem;
+      width: 80px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>💧 Alerta para Beber Água</h1>
+
+  <div class="counter">
+    Copos bebidos hoje: <span id="copos">0</span> / <span id="meta">8</span>
+  </div>
+
+  <button onclick="beberAgua()">Bebi um copo 💧</button>
+
+  <div>
+    <label for="metaInput">Meta diária:</label>
+    <input type="number" id="metaInput" value="8" min="1" onchange="alterarMeta()" />
+  </div>
+
+  <audio id="alarme" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+  <script>
+    // Valores iniciais
+    let copos = parseInt(localStorage.getItem("copos")) || 0;
+    let meta = parseInt(localStorage.getItem("meta")) || 8;
+    const hoje = new Date().toDateString();
+    const ultimoDia = localStorage.getItem("ultimoDia");
+
+    // Reset diário automático
+    if (ultimoDia !== hoje) {
+      copos = 0;
+      localStorage.setItem("copos", 0);
+      localStorage.setItem("ultimoDia", hoje);
+    }
+
+    // Atualizar a tela
+    document.getElementById("copos").textContent = copos;
+    document.getElementById("meta").textContent = meta;
+    document.getElementById("metaInput").value = meta;
+
+    // Função para beber água
+    function beberAgua() {
+      copos++;
+      localStorage.setItem("copos", copos);
+      document.getElementById("copos").textContent = copos;
+      if (copos >= meta) {
+        alert("Parabéns! Você atingiu sua meta de hidratação hoje! 🎉");
+      }
+    }
+
+    // Alterar meta
+    function alterarMeta() {
+      meta = parseInt(document.getElementById("metaInput").value);
+      localStorage.setItem("meta", meta);
+      document.getElementById("meta").textContent = meta;
+    }
+
+    // Notificação do navegador
+    function pedirPermissaoNotificacoes() {
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+    }
+
+    function notificarUsuario() {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("💧 Hora de beber água!");
+      }
+    }
+
+    // Alerta sonoro + notificação a cada 60 minutos
+    setInterval(() => {
+      document.getElementById("alarme").play();
+      notificarUsuario();
+      alert("⏰ Alerta: Hora de beber água!");
+    }, 60 * 60 * 1000); // 60 minutos
+
+    pedirPermissaoNotificacoes();
+  </script>
+</body>
+</html>
