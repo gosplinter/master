@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskTrack - Organizador de Tarefas Semanais</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2980b9;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #ecf0f1;
+            --bg: #34495e;
+            --card: #2c3e50;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --light-bg: #f5f6f5;
+            --light-text: #2c3e50;
+            --light-card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.light-mode {
+            --bg: var(--light-bg);
+            --text: var(--light-text);
+            --card: var(--light-card);
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .toggle-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px var(--shadow);
+            transition: background-color 0.3s;
+        }
+
+        .task-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--dark);
+            background-color: var(--bg);
+            color: var(--text);
+            flex: 1;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+        }
+
+        .task-columns {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .day-column {
+            flex: 1;
+            min-width: 150px;
+            background-color: var(--dark);
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .day-column h3 {
+            margin: 0 0 10px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .task {
+            background-color: var(--card);
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .task-actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .complete-btn {
+            background-color: var(--success);
+        }
+
+        .complete-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .cancel-btn {
+            background-color: var(--danger);
+        }
+
+        .cancel-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: var(--dark);
+            text-align: center;
+            transition: background-color 0.3s, opacity 0.5s;
+            opacity: 1;
+        }
+
+        .message.hidden {
+            opacity: 0;
+        }
+
+        .positive {
+            border-left: 5px solid var(--success);
+        }
+
+        .negative {
+            border-left: 5px solid var(--danger);
+        }
+
+        .summary {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 TaskTrack</h1>
+            <button class="toggle-btn" id="theme-toggle" aria-label="Alternar entre modo claro e escuro">Modo Claro</button>
+        </header>
+
+        <div class="card">
+            <h2>Adicionar Tarefa</h2>
+            <div class="task-input">
+                <input type="text" id="task-description" placeholder="Descrição da tarefa" aria-label="Descrição da tarefa">
+                <select id="task-day" aria-label="Dia da tarefa">
+                    <option value="0">Domingo</option>
+                    <option value="1">Segunda</option>
+                    <option value="2">Terça</option>
+                    <option value="3">Quarta</option>
+                    <option value="4">Quinta</option>
+                    <option value="5">Sexta</option>
+                    <option value="6">Sábado</option>
+                </select>
+                <button id="add-task-btn" aria-label="Adicionar tarefa">+ Tarefa</button>
+            </div>
+            <div id="message-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>Tarefas da Semana</h2>
+            <div class="task-columns">
+                <div class="day-column" id="day-1"><h3>Segunda</h3></div>
+                <div class="day-column" id="day-2"><h3>Terça</h3></div>
+                <div class="day-column" id="day-3"><h3>Quarta</h3></div>
+                <div class="day-column" id="day-4"><h3>Quinta</h3></div>
+                <div class="day-column" id="day-5"><h3>Sexta</h3></div>
+                <div class="day-column" id="day-6"><h3>Sábado</h3></div>
+                <div class="day-column" id="day-0"><h3>Domingo</h3></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Relatório de Tarefas</h2>
+            <div class="summary" id="weekly-summary">Total de tarefas concluídas esta semana: 0</div>
+            <div class="chart-container">
+                <canvas id="task-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const settings = {
+            darkMode: true
+        };
+
+        // Dados
+        let taskData = {
+            currentWeek: {
+                weekStart: getWeekStart(),
+                tasks: Array(7).fill().map(() => []), // Array para cada dia da semana
+                completed: Array(7).fill(0) // Contador de tarefas concluídas por dia
+            },
+            history: []
+        };
+
+        // Gráficos
+        let taskChart;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setupEventListeners();
+            updateTaskColumns();
+            updateUI();
+            renderChart();
+        });
+
+        // Obtém o início da semana (Segunda-feira)
+        function getWeekStart() {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = (day === 0 ? -6 : 1 - day); // Ajusta para começar na Segunda
+            today.setDate(today.getDate() + diff);
+            return today.toLocaleDateString('pt-BR');
+        }
+
+        // Carrega dados do localStorage
+        function loadData() {
+            const savedSettings = localStorage.getItem('taskTrackSettings');
+            if (savedSettings) {
+                Object.assign(settings, JSON.parse(savedSettings));
+                if (!settings.darkMode) {
+                    toggleTheme();
+                }
+            }
+            
+            const savedTaskData = localStorage.getItem('taskTrackData');
+            if (savedTaskData) {
+                const parsedData = JSON.parse(savedTaskData);
+                if (parsedData.currentWeek && parsedData.history) {
+                    taskData = parsedData;
+                    // Garante que tasks e completed sejam arrays
+                    if (!Array.isArray(taskData.currentWeek.tasks)) {
+                        taskData.currentWeek.tasks = Array(7).fill().map(() => []);
+                    }
+                    if (!Array.isArray(taskData.currentWeek.completed)) {
+                        taskData.currentWeek.completed = Array(7).fill(0);
+                    }
+                    // Verifica se é uma nova semana
+                    const currentWeekStart = getWeekStart();
+                    if (taskData.currentWeek.weekStart !== currentWeekStart) {
+                        if (taskData.currentWeek.tasks.some(tasks => tasks.length > 0) || 
+                            taskData.currentWeek.completed.some(count => count > 0)) {
+                            taskData.history.push(taskData.currentWeek);
+                        }
+                        taskData.currentWeek = {
+                            weekStart: currentWeekStart,
+                            tasks: Array(7).fill().map(() => []),
+                            completed: Array(7).fill(0)
+                        };
+                        taskData.history = taskData.history.slice(-52); // Limitar a 52 semanas
+                    }
+                    // Move tarefas não concluídas de dias passados
+                    movePendingTasks();
+                    saveData();
+                }
+            }
+        }
+
+        // Salva dados no localStorage
+        function saveData() {
+            localStorage.setItem('taskTrackSettings', JSON.stringify(settings));
+            localStorage.setItem('taskTrackData', JSON.stringify(taskData));
+        }
+
+        // Configura eventos
+        function setupEventListeners() {
+            document.getElementById('add-task-btn').addEventListener('click', addTaskFromInput);
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            document.getElementById('task-description').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTaskFromInput();
+                }
+            });
+        }
+
+        // Adiciona tarefa a partir do input
+        function addTaskFromInput() {
+            const descriptionInput = document.getElementById('task-description');
+            const dayInput = document.getElementById('task-day');
+            const description = descriptionInput.value.trim();
+            const day = parseInt(dayInput.value);
+            
+            if (!description) {
+                showMessage("Digite uma descrição para a tarefa!", "negative");
+                return;
+            }
+            
+            addTask(description, day);
+            descriptionInput.value = '';
+            dayInput.value = new Date().getDay() || 7; // Default para hoje (1-7)
+        }
+
+        // Adiciona tarefa ao registro
+        function addTask(description, day) {
+            taskData.currentWeek.tasks[day].push({
+                id: Date.now(),
+                description: description,
+                date: new Date().toLocaleDateString('pt-BR')
+            });
+            
+            saveData();
+            updateTaskColumns();
+            showMessage("Tarefa adicionada com sucesso!", "positive");
+        }
+
+        // Move tarefas não concluídas de dias passados
+        function movePendingTasks() {
+            const today = new Date();
+            const currentDay = today.getDay() || 7; // Converte Domingo (0) para 7
+            const weekStart = new Date(taskData.currentWeek.weekStart.split('/').reverse().join('-'));
+            
+            for (let day = 1; day <= 7; day++) {
+                if (day >= currentDay) continue; // Não move tarefas do dia atual ou futuro
+                const tasks = taskData.currentWeek.tasks[day];
+                if (tasks.length === 0) continue;
+                
+                // Calcula quantos dias passaram desde a data da tarefa
+                taskData.currentWeek.tasks[day].forEach(task => {
+                    const taskDate = new Date(task.date.split('/').reverse().join('-'));
+                    const daysDiff = Math.floor((today - taskDate) / (1000 * 60 * 60 * 24));
+                    if (daysDiff > 0) {
+                        // Move para o próximo dia disponível (não ultrapassa Domingo)
+                        const targetDay = Math.min(day + daysDiff, 7);
+                        taskData.currentWeek.tasks[targetDay].push({ ...task, date: today.toLocaleDateString('pt-BR') });
+                    }
+                });
+                taskData.currentWeek.tasks[day] = []; // Limpa o dia original
+            }
+        }
+
+        // Atualiza as colunas de tarefas
+        function updateTaskColumns() {
+            const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            for (let i = 0; i < 7; i++) {
+                const column = document.getElementById(`day-${i}`);
+                column.innerHTML = `<h3>${days[i]}</h3>`;
+                taskData.currentWeek.tasks[i].forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = 'task';
+                    taskElement.innerHTML = `
+                        <span>${task.description}</span>
+                        <div class="task-actions">
+                            <button class="complete-btn" data-id="${task.id}" data-day="${i}" aria-label="Concluir tarefa ${task.description}">Concluir</button>
+                            <button class="cancel-btn" data-id="${task.id}" data-day="${i}" aria-label="Cancelar tarefa ${task.description}">Cancelar</button>
+                        </div>
+                    `;
+                    column.appendChild(taskElement);
+                });
+            }
+            
+            // Adiciona eventos aos botões de concluir e cancelar
+            document.querySelectorAll('.complete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    const day = parseInt(btn.getAttribute('data-day'));
+                    completeTask(id, day);
+                });
+            });
+            
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    const day = parseInt(btn.getAttribute('data-day'));
+                    cancelTask(id, day);
+                });
+            });
+        }
+
+        // Conclui uma tarefa
+        function completeTask(id, day) {
+            taskData.currentWeek.tasks[day] = taskData.currentWeek.tasks[day].filter(task => task.id !== id);
+            taskData.currentWeek.completed[day]++;
+            saveData();
+            updateTaskColumns();
+            updateUI();
+            renderChart();
+            showMessage("Tarefa concluída!", "positive");
+        }
+
+        // Cancela uma tarefa
+        function cancelTask(id, day) {
+            taskData.currentWeek.tasks[day] = taskData.currentWeek.tasks[day].filter(task => task.id !== id);
+            saveData();
+            updateTaskColumns();
+            showMessage("Tarefa cancelada!", "negative");
+        }
+
+        // Atualiza a interface
+        function updateUI() {
+            const totalCompleted = taskData.currentWeek.completed.reduce((sum, count) => sum + count, 0);
+            document.getElementById('weekly-summary').textContent = `Total de tarefas concluídas esta semana: ${totalCompleted}`;
+        }
+
+        // Renderiza o gráfico
+        function renderChart() {
+            const ctx = document.getElementById('task-chart').getContext('2d');
+            const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+            
+            if (taskChart) {
+                taskChart.destroy();
+            }
+            
+            taskChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Tarefas Concluídas',
+                        data: taskData.currentWeek.completed,
+                        backgroundColor: [
+                            '#3498db', // Segunda
+                            '#2ecc71', // Terça
+                            '#e74c3c', // Quarta
+                            '#f1c40f', // Quinta
+                            '#9b59b6', // Sexta
+                            '#1abc9c', // Sábado
+                            '#e67e22'  // Domingo
+                        ],
+                        borderColor: settings.darkMode ? '#2c3e50' : '#f5f6f5',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                color: settings.darkMode ? 'var(--text)' : 'var(--light-text)'
+                            },
+                            grid: {
+                                color: settings.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: settings.darkMode ? 'var(--text)' : 'var(--light-text)'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Alterna tema
+        function toggleTheme() {
+            settings.darkMode = !settings.darkMode;
+            document.body.classList.toggle('light-mode');
+            
+            document.getElementById('theme-toggle').textContent = settings.darkMode ? 'Modo Claro' : 'Modo Escuro';
+            
+            document.querySelectorAll('input, select').forEach(el => {
+                el.style.backgroundColor = settings.darkMode ? 'var(--bg)' : 'var(--light-bg)';
+                el.style.color = settings.darkMode ? 'var(--text)' : 'var(--light-text)';
+                el.style.borderColor = settings.darkMode ? 'var(--dark)' : 'var(--light-text)';
+            });
+            
+            saveData();
+            renderChart();
+        }
+
+        // Mostra mensagem
+        function showMessage(text, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `
+                <div class="message ${type}">
+                    ${text}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const message = container.querySelector('.message');
+                if (message) {
+                    message.classList.add('hidden');
+                    setTimeout(() => {
+                        container.innerHTML = '';
+                    }, 500);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
