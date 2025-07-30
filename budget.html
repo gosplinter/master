@@ -195,6 +195,31 @@
         .negative {
             border-left: 5px solid var(--danger);
         }
+
+        .income-summary {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: var(--dark);
+            border-radius: 5px;
+        }
+
+        .income-summary table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .income-summary th, .income-summary td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--text);
+        }
+
+        .income-summary th {
+            font-weight: bold;
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -241,6 +266,7 @@
 
             <div class="income-input">
                 <input type="number" id="income-amount" min="0.01" step="0.01" value="100.00" placeholder="Valor extra" aria-label="Valor extra recebido">
+                <input type="text" id="income-description" placeholder="Descrição (ex.: Bônus)" aria-label="Descrição da renda extra">
                 <button id="add-income-btn" aria-label="Adicionar renda extra">+ Renda</button>
             </div>
 
@@ -257,6 +283,22 @@
             </div>
 
             <div id="message-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>Resumo de Rendas Extras</h2>
+            <div class="income-summary" aria-label="Resumo das rendas extras do mês">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Valor</th>
+                            <th>Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody id="income-summary-body"></tbody>
+                </table>
+            </div>
         </div>
 
         <div class="card">
@@ -280,7 +322,7 @@
         // Configurações
         const settings = {
             monthlyBudget: 5000.00,
-            extraIncome: 0.00, // Novo campo para renda extra
+            extraIncome: 0.00,
             darkMode: true
         };
 
@@ -289,9 +331,9 @@
             currentMonth: {
                 month: new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' }),
                 totalSpent: 0,
-                totalIncome: 0, // Novo campo para renda extra
+                totalIncome: 0,
                 entries: [],
-                incomeEntries: [] // Novo campo para registros de renda
+                incomeEntries: []
             },
             history: []
         };
@@ -326,6 +368,21 @@
                 if (parsedData.currentMonth && parsedData.history) {
                     expenseData = parsedData;
                     
+                    // Garantir que currentMonth tenha incomeEntries e totalIncome
+                    if (!Array.isArray(expenseData.currentMonth.incomeEntries)) {
+                        expenseData.currentMonth.incomeEntries = [];
+                    }
+                    if (typeof expenseData.currentMonth.totalIncome !== 'number') {
+                        expenseData.currentMonth.totalIncome = 0;
+                    }
+                    
+                    // Garantir que history tenha incomeEntries e totalIncome
+                    expenseData.history = expenseData.history.map(month => ({
+                        ...month,
+                        incomeEntries: Array.isArray(month.incomeEntries) ? month.incomeEntries : [],
+                        totalIncome: typeof month.totalIncome === 'number' ? month.totalIncome : 0
+                    }));
+                    
                     const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
                     if (expenseData.currentMonth.month !== currentMonth) {
                         if (expenseData.currentMonth.totalSpent > 0 || expenseData.currentMonth.totalIncome > 0) {
@@ -345,6 +402,7 @@
                     }
                 }
             }
+            updateIncomeSummary(); // Atualiza o resumo ao carregar
         }
 
         // Salva dados no localStorage
@@ -387,6 +445,12 @@
                     addIncomeFromInput();
                 }
             });
+            
+            document.getElementById('income-description').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addIncomeFromInput();
+                }
+            });
         }
 
         // Adiciona despesa a partir do input
@@ -407,15 +471,18 @@
         // Adiciona renda extra a partir do input
         function addIncomeFromInput() {
             const amountInput = document.getElementById('income-amount');
+            const descriptionInput = document.getElementById('income-description');
             const amount = parseFloat(amountInput.value);
+            const description = descriptionInput.value.trim() || 'Sem descrição';
             
             if (isNaN(amount) || amount <= 0) {
                 showMessage("Digite um valor válido para a renda extra!", "negative");
                 return;
             }
             
-            addIncome(amount);
+            addIncome(amount, description);
             amountInput.value = '100.00';
+            descriptionInput.value = '';
         }
 
         // Adiciona despesa ao registro
@@ -435,25 +502,31 @@
         }
 
         // Adiciona renda extra ao registro
-        function addIncome(amount) {
+        function addIncome(amount, description) {
+            if (!Array.isArray(expenseData.currentMonth.incomeEntries)) {
+                expenseData.currentMonth.incomeEntries = [];
+            }
+            
             expenseData.currentMonth.totalIncome += amount;
             settings.extraIncome += amount;
             expenseData.currentMonth.incomeEntries.push({
                 time: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
                 date: new Date().toLocaleDateString('pt-BR'),
-                amount: amount
+                amount: amount,
+                description: description
             });
             
             saveData();
             updateUI();
             renderChart();
-            showMessage(`Renda extra de R$ ${amount.toFixed(2)} adicionada!`, "positive");
+            updateIncomeSummary();
+            showMessage(`Renda extra de R$ ${amount.toFixed(2)} (${description}) adicionada!`, "positive");
         }
 
         // Atualiza a interface
         function updateUI() {
             const totalBudget = settings.monthlyBudget + settings.extraIncome;
-            const percentage = Math.min(Math.round((expenseData.currentMonth.totalSpent / totalBudget) * 100), 100);
+            const percentage = totalBudget > 0 ? Math.min(Math.round((expenseData.currentMonth.totalSpent / totalBudget) * 100), 100) : 0;
             
             document.getElementById('budget-progress').style.width = `${percentage}%`;
             document.getElementById('budget-progress').textContent = `${percentage}%`;
@@ -470,6 +543,27 @@
                 document.getElementById('month-remaining').textContent = `R$ ${remaining.toFixed(2)}`;
                 document.getElementById('month-remaining').style.color = 'var(--success)';
             }
+        }
+
+        // Atualiza o resumo de rendas extras
+        function updateIncomeSummary() {
+            const tbody = document.getElementById('income-summary-body');
+            tbody.innerHTML = '';
+            
+            if (expenseData.currentMonth.incomeEntries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3">Nenhuma renda extra registrada este mês.</td></tr>';
+                return;
+            }
+            
+            expenseData.currentMonth.incomeEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.date}</td>
+                    <td>R$ ${entry.amount.toFixed(2)}</td>
+                    <td>${entry.description}</td>
+                `;
+                tbody.appendChild(row);
+            });
         }
 
         // Renderiza o gráfico
@@ -495,13 +589,13 @@
                     datasets: [{
                         data: amounts,
                         backgroundColor: [
-                            'var(--primary)',
-                            'var(--success)',
-                            'var(--danger)',
-                            '#f1c40f',
-                            '#9b59b6'
+                            '#3498db', // Azul
+                            '#2ecc71', // Verde
+                            '#e74c3c', // Vermelho
+                            '#f1c40f', // Amarelo
+                            '#9b59b6'  // Roxo
                         ],
-                        borderColor: settings.darkMode ? 'var(--dark)' : 'var(--light-bg)',
+                        borderColor: settings.darkMode ? '#2c3e50' : '#f5f6f5',
                         borderWidth: 1
                     }]
                 },
@@ -523,7 +617,7 @@
         // Mostra mensagem motivacional
         function showMotivationalMessage() {
             const totalBudget = settings.monthlyBudget + settings.extraIncome;
-            const percentage = expenseData.currentMonth.totalSpent / totalBudget;
+            const percentage = totalBudget > 0 ? expenseData.currentMonth.totalSpent / totalBudget : 0;
             const container = document.getElementById('message-container');
             
             let message = '';
@@ -562,6 +656,7 @@
             saveData();
             updateUI();
             renderChart();
+            updateIncomeSummary();
             
             showMessage("Configurações salvas!", "positive");
         }
