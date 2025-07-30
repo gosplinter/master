@@ -3,190 +3,349 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hidrata+ Quest</title>
+  <title>HidrataX Quest 🚀💧</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Orbitron', sans-serif;
     }
 
     body {
-      background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
-      color: #333;
+      background: linear-gradient(135deg, #1a0933, #4b0082);
+      color: #e0e0ff;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
       padding: 20px;
+      overflow-x: hidden;
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 3rem;
+      text-shadow: 0 0 20px #00d4ff;
       margin-bottom: 20px;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00d4ff; }
+      to { text-shadow: 0 0 20px #00d4ff, 0 0 30px #ff00ff; }
     }
 
     .tracker {
-      background: #fff;
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
       padding: 30px;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       text-align: center;
-      margin-bottom: 40px;
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+      margin-bottom: 20px;
     }
 
     input {
       padding: 10px;
       margin: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid #00d4ff;
       border-radius: 10px;
-      width: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      width: 100px;
+      font-size: 1rem;
     }
 
     button {
-      background: #00c9a7;
-      color: white;
+      background: linear-gradient(45deg, #ff00ff, #00d4ff);
+      color: #fff;
       border: none;
-      padding: 10px 20px;
-      border-radius: 20px;
+      padding: 12px 25px;
+      border-radius: 25px;
       cursor: pointer;
-      margin-top: 15px;
-      transition: background 0.3s ease;
+      margin: 10px;
+      font-size: 1.1rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     button:hover {
-      background: #00b495;
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #00d4ff;
     }
 
     .stats {
-      margin-top: 20px;
       font-size: 1.2rem;
+      margin-top: 20px;
+      text-shadow: 0 0 10px #00d4ff;
     }
 
     canvas {
-      border: 2px solid #333;
+      border: 2px solid #00d4ff;
+      border-radius: 10px;
+      background: radial-gradient(circle, #1a0933, #000);
       margin-top: 20px;
-      background: #fff;
+      max-width: 100%;
     }
 
-    .lives {
-      font-weight: bold;
-      margin-top: 10px;
-      font-size: 1.2rem;
+    .leaderboard {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 20px;
+      color: #e0e0ff;
+    }
+
+    .leaderboard h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .leaderboard ul {
+      list-style: none;
+    }
+
+    .leaderboard li {
+      padding: 10px;
+      border-bottom: 1px solid #00d4ff;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .tracker { padding: 20px; }
+      input { width: 80px; }
+      canvas { width: 100%; height: auto; }
     }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>Hidrata+ Quest 💧🧀</h1>
+  <h1>HidrataX Quest 🚀💧</h1>
   <div class="tracker">
     <div>
-      <label for="copos">Copos por dia:</label>
-      <input type="number" id="copos" value="8">
-      <label for="ml">ML por copo:</label>
-      <input type="number" id="ml" value="250">
+      <label for="ml">ML por dose:</label>
+      <input type="number" id="ml" value="250" aria-describedby="ml-desc">
+      <span id="ml-desc" class="sr-only">Volume de água por dose em mililitros</span>
     </div>
     <button onclick="beberAgua()">Beber Água 💦</button>
+    <button onclick="reiniciarJogo()">Reiniciar Missão</button>
     <div class="stats" id="status"></div>
   </div>
-  <canvas id="gameCanvas" width="500" height="200"></canvas>
-  <div class="lives" id="vidas"></div>
+  <canvas id="gameCanvas"></canvas>
+  <div class="leaderboard">
+    <h2>Ranking Intergaláctico</h2>
+    <ul id="leaderboard"></ul>
+  </div>
 
   <script>
+    // Configuração inicial
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
     const statusEl = document.getElementById('status');
-    const vidasEl = document.getElementById('vidas');
-    let vidas = 0;
-    let aguaHoje = 0;
-    let coposHoje = 0;
+    const leaderboardEl = document.getElementById('leaderboard');
+
+    // Ajuste responsivo do canvas
+    function ajustarCanvas() {
+      canvas.width = Math.min(600, window.innerWidth - 40);
+      canvas.height = canvas.width * 0.5;
+    }
+    window.addEventListener('resize', ajustarCanvas);
+    ajustarCanvas();
+
+    // Dados persistentes
     const hoje = new Date().toLocaleDateString();
+    let dados = JSON.parse(localStorage.getItem('hidrataX')) || {};
+    if (!dados[hoje]) dados[hoje] = { agua: 0, pontos: 0, vidas: 3 };
+    let vidas = dados[hoje].vidas;
+    let aguaHoje = dados[hoje].agua;
+    let pontos = dados[hoje].pontos;
 
-    const dados = JSON.parse(localStorage.getItem('hidratacao')) || {};
-    if (!dados[hoje]) dados[hoje] = { agua: 0, copos: 0, pontos: 0 };
+    // Estado do jogo
+    let nave = { x: 50, y: canvas.height - 50, w: 40, h: 20, vy: 0, jumping: false };
+    let planetas = [];
+    let gameOver = false;
+    let velocidade = 4;
+    let estrelas = [];
 
+    // Ranking
+    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    function atualizarLeaderboard() {
+      leaderboard.push({ nome: `Explorador${Math.floor(Math.random() * 1000)}`, pontos });
+      leaderboard.sort((a, b) => b.pontos - a.pontos);
+      leaderboard = leaderboard.slice(0, 5);
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+      leaderboardEl.innerHTML = leaderboard.map(p => `<li>${p.nome}: ${p.pontos} pontos</li>`).join('');
+    }
+
+    // Função de hidratação
     function beberAgua() {
-      const copos = parseInt(document.getElementById('copos').value);
       const ml = parseInt(document.getElementById('ml').value);
-      dados[hoje].agua += ml;
-      dados[hoje].copos++;
-      dados[hoje].pontos++;
-      vidas++;
-      localStorage.setItem('hidratacao', JSON.stringify(dados));
+      if (isNaN(ml) || ml <= 0) {
+        alert('Insira um volume válido!');
+        return;
+      }
+      aguaHoje += ml;
+      pontos += Math.floor(ml / 100);
+      vidas = Math.min(vidas + 1, 5); // Máximo de 5 vidas
+      dados[hoje] = { agua: aguaHoje, pontos, vidas };
+      localStorage.setItem('hidrataX', JSON.stringify(dados));
       atualizarStatus();
+      atualizarLeaderboard();
+      spawnPlaneta();
     }
 
     function atualizarStatus() {
-      statusEl.innerHTML = `Hoje: ${dados[hoje].copos} copos (${dados[hoje].agua / 1000} L)<br>Total de pontos: ${Object.values(dados).reduce((a,b)=>a+b.pontos,0)}`;
-      vidasEl.innerHTML = `Vidas: ${vidas}`;
+      statusEl.innerHTML = `
+        Missão de Hoje: ${aguaHoje / 1000} L<br>
+        Pontos: ${pontos}<br>
+        Vidas: ${'❤️'.repeat(vidas)}
+      `;
     }
 
-    atualizarStatus();
+    // Jogo
+    function spawnPlaneta() {
+      planetas.push({
+        x: canvas.width,
+        y: Math.random() * (canvas.height - 50),
+        w: 30,
+        h: 30,
+        type: Math.random() > 0.7 ? 'agua' : 'rocha'
+      });
+    }
 
-    // JOGO
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-
-    let rato = { x: 50, y: 150, w: 30, h: 30, vy: 0, jumping: false };
-    let chao = 170;
-    let obstaculo = { x: 500, y: 150, w: 20, h: 40 };
-    let pontos = 0;
-    let gameOver = false;
+    function criarEstrelas() {
+      for (let i = 0; i < 50; i++) {
+        estrelas.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 1
+        });
+      }
+    }
 
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Desenha rato
-      ctx.fillStyle = "#444";
-      ctx.fillRect(rato.x, rato.y, rato.w, rato.h);
+      // Fundo estelar
+      ctx.fillStyle = '#fff';
+      estrelas.forEach(estrela => {
+        ctx.beginPath();
+        ctx.arc(estrela.x, estrela.y, estrela.size, 0, Math.PI * 2);
+        ctx.fill();
+        estrela.x -= 0.5;
+        if (estrela.x < 0) estrela.x = canvas.width;
+      });
 
-      // Gravetos
-      ctx.fillStyle = "#c0392b";
-      ctx.fillRect(obstaculo.x, obstaculo.y, obstaculo.w, obstaculo.h);
+      // Nave
+      ctx.fillStyle = '#00d4ff';
+      ctx.beginPath();
+      ctx.moveTo(nave.x, nave.y + nave.h);
+      ctx.lineTo(nave.x + nave.w, nave.y);
+      ctx.lineTo(nave.x, nave.y - nave.h);
+      ctx.fill();
 
-      obstaculo.x -= 4;
-      if (obstaculo.x < -20) {
-        obstaculo.x = canvas.width + Math.random() * 100;
-        pontos++;
-      }
+      // Planetas
+      planetas.forEach(p => {
+        ctx.fillStyle = p.type === 'agua' ? '#00b4d8' : '#8d5524';
+        ctx.beginPath();
+        ctx.arc(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, 0, Math.PI * 2);
+        ctx.fill();
+        p.x -= velocidade;
+      });
+      planetas = planetas.filter(p => p.x > -p.w);
 
       // Gravidade
-      rato.vy += 1.5;
-      rato.y += rato.vy;
-
-      if (rato.y > chao) {
-        rato.y = chao;
-        rato.vy = 0;
-        rato.jumping = false;
+      nave.vy += 0.8;
+      nave.y += nave.vy;
+      if (nave.y > canvas.height - nave.h) {
+        nave.y = canvas.height - nave.h;
+        nave.vy = 0;
+        nave.jumping = false;
+      }
+      if (nave.y < nave.h) {
+        nave.y = nave.h;
+        nave.vy = 0;
       }
 
       // Colisão
-      if (
-        rato.x < obstaculo.x + obstaculo.w &&
-        rato.x + rato.w > obstaculo.x &&
-        rato.y < obstaculo.y + obstaculo.h &&
-        rato.y + rato.h > obstaculo.y
-      ) {
-        if (vidas > 0) {
-          vidas--;
-          obstaculo.x = canvas.width + 100;
-        } else {
-          gameOver = true;
+      planetas.forEach(p => {
+        if (
+          nave.x < p.x + p.w &&
+          nave.x + nave.w > p.x &&
+          nave.y - nave.h < p.y + p.h &&
+          nave.y + nave.h > p.y
+        ) {
+          if (p.type === 'agua') {
+            pontos += 10;
+            aguaHoje += 100;
+            dados[hoje].agua = aguaHoje;
+            dados[hoje].pontos = pontos;
+            localStorage.setItem('hidrataX', JSON.stringify(dados));
+            atualizarStatus();
+            atualizarLeaderboard();
+          } else {
+            if (vidas > 0) {
+              vidas--;
+              dados[hoje].vidas = vidas;
+              localStorage.setItem('hidrataX', JSON.stringify(dados));
+              atualizarStatus();
+            } else {
+              gameOver = true;
+            }
+          }
+          planetas = planetas.filter(planet => planet !== p);
         }
+      });
+
+      // Dificuldade dinâmica
+      velocidade = 4 + pontos / 100;
+
+      // Game Over
+      if (gameOver) {
+        ctx.fillStyle = '#ff00ff';
+        ctx.font = '30px Orbitron';
+        ctx.fillText('Missão Falhou!', canvas.width / 2 - 100, canvas.height / 2);
+        return;
       }
 
-      vidasEl.innerHTML = `Vidas: ${vidas}`;
-      if (!gameOver) requestAnimationFrame(loop);
-      else ctx.fillText("Game Over", 200, 100);
+      atualizarStatus();
+      if (Math.random() < 0.02) spawnPlaneta();
+      requestAnimationFrame(loop);
     }
 
-    document.addEventListener("keydown", function (e) {
-      if (e.code === "Space" && !rato.jumping) {
-        rato.vy = -20;
-        rato.jumping = true;
+    function reiniciarJogo() {
+      vidas = 3;
+      pontos = 0;
+      aguaHoje = 0;
+      gameOver = false;
+      planetas = [];
+      nave.y = canvas.height - 50;
+      nave.vy = 0;
+      nave.jumping = false;
+      velocidade = 4;
+      dados[hoje] = { agua: 0, pontos: 0, vidas: 3 };
+      localStorage.setItem('hidrataX', JSON.stringify(dados));
+      atualizarStatus();
+      atualizarLeaderboard();
+      loop();
+    }
+
+    // Controles
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space' && !nave.jumping) {
+        nave.vy = -15;
+        nave.jumping = true;
       }
     });
 
+    // Inicialização
+    criarEstrelas();
+    spawnPlaneta();
+    atualizarStatus();
+    atualizarLeaderboard();
     loop();
   </script>
 </body>
