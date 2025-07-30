@@ -17,6 +17,9 @@
             --bg: #34495e;
             --card: #2c3e50;
             --shadow: rgba(0, 0, 0, 0.3);
+            --light-bg: #f5f6f5;
+            --light-text: #2c3e50;
+            --light-card: #ffffff;
         }
 
         body {
@@ -26,6 +29,14 @@
             margin: 0;
             padding: 20px;
             min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.light-mode {
+            --bg: var(--light-bg);
+            --text: var(--light-text);
+            --card: var(--light-card);
+            --shadow: rgba(0, 0, 0, 0.1);
         }
 
         .container {
@@ -52,6 +63,11 @@
             padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background-color: var(--secondary);
         }
 
         .card {
@@ -60,6 +76,7 @@
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 8px var(--shadow);
+            transition: background-color 0.3s;
         }
 
         .progress-container {
@@ -115,6 +132,7 @@
             background-color: var(--bg);
             color: var(--text);
             flex: 1;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         button {
@@ -124,6 +142,7 @@
             padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         button:hover {
@@ -143,6 +162,7 @@
             border-radius: 5px;
             text-align: center;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         .quick-btn:hover {
@@ -160,6 +180,13 @@
             border-radius: 5px;
             background-color: var(--dark);
             text-align: center;
+            transition: background-color 0.3s;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+
+        .message.hidden {
+            opacity: 0;
         }
 
         .positive {
@@ -175,7 +202,7 @@
     <div class="container">
         <header>
             <h1>💧 HydroTrack</h1>
-            <button class="toggle-btn" id="theme-toggle">Modo Claro</button>
+            <button class="toggle-btn" id="theme-toggle" aria-label="Alternar entre modo claro e escuro">Modo Claro</button>
         </header>
 
         <div class="card">
@@ -202,23 +229,23 @@
             </div>
 
             <div class="water-input">
-                <input type="number" id="water-amount" min="1" value="200" placeholder="Quantidade">
-                <select id="water-unit">
+                <input type="number" id="water-amount" min="1" value="200" placeholder="Quantidade" aria-label="Quantidade de água">
+                <select id="water-unit" aria-label="Unidade de medida">
                     <option value="ml">ml</option>
                     <option value="copos">copos (200ml)</option>
                     <option value="garrafas">garrafas (500ml)</option>
                 </select>
-                <button id="add-water-btn">+</button>
+                <button id="add-water-btn" aria-label="Adicionar água">+</button>
             </div>
 
             <div class="quick-actions">
-                <div class="quick-btn" data-amount="200">
+                <div class="quick-btn" data-amount="200" role="button" tabindex="0" aria-label="Adicionar 200ml">
                     <div>Copo (200ml)</div>
                 </div>
-                <div class="quick-btn" data-amount="300">
+                <div class="quick-btn" data-amount="300" role="button" tabindex="0" aria-label="Adicionar 300ml">
                     <div>Garrafa (300ml)</div>
                 </div>
-                <div class="quick-btn" data-amount="500">
+                <div class="quick-btn" data-amount="500" role="button" tabindex="0" aria-label="Adicionar 500ml">
                     <div>Garrafa (500ml)</div>
                 </div>
             </div>
@@ -237,9 +264,9 @@
             <h2>Configurações</h2>
             <div style="margin-bottom: 15px;">
                 <label for="daily-goal">Meta diária (ml):</label>
-                <input type="number" id="daily-goal" min="500" value="2000" style="width: 100%; margin-top: 5px;">
+                <input type="number" id="daily-goal" min="500" max="10000" value="2000" style="width: 100%; margin-top: 5px;" aria-label="Meta diária de consumo de água">
             </div>
-            <button id="save-settings-btn" style="width: 100%;">Salvar Configurações</button>
+            <button id="save-settings-btn" style="width: 100%;" aria-label="Salvar configurações">Salvar Configurações</button>
         </div>
     </div>
 
@@ -287,25 +314,23 @@
             if (savedWaterData) {
                 const parsedData = JSON.parse(savedWaterData);
                 
-                // Verifica se os dados são válidos
                 if (parsedData.today && parsedData.history) {
                     waterData = parsedData;
                     
-                    // Verifica se é um novo dia
                     const today = new Date().toLocaleDateString('pt-BR');
                     if (waterData.today.date !== today) {
-                        // Salva o dia anterior no histórico
                         if (waterData.today.amount > 0) {
                             waterData.history.push(waterData.today);
                         }
                         
-                        // Cria novo registro para hoje
                         waterData.today = {
                             date: today,
                             amount: 0,
                             entries: []
                         };
                         
+                        // Limitar histórico a 30 dias
+                        waterData.history = waterData.history.slice(-30);
                         saveData();
                     }
                 }
@@ -326,6 +351,12 @@
                 btn.addEventListener('click', () => {
                     const amount = parseInt(btn.getAttribute('data-amount'));
                     addWater(amount);
+                });
+                btn.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        const amount = parseInt(btn.getAttribute('data-amount'));
+                        addWater(amount);
+                    }
                 });
             });
             
@@ -350,9 +381,17 @@
                 return;
             }
             
-            let mlAmount = amount;
-            if (unit === 'copos') mlAmount = amount * 200;
-            if (unit === 'garrafas') mlAmount = amount * 500;
+            let mlAmount;
+            switch (unit) {
+                case 'copos':
+                    mlAmount = amount * 200;
+                    break;
+                case 'garrafas':
+                    mlAmount = amount * 500;
+                    break;
+                default:
+                    mlAmount = amount;
+            }
             
             addWater(mlAmount);
             amountInput.value = '200';
@@ -397,7 +436,6 @@
         function renderChart() {
             const ctx = document.getElementById('weekly-chart').getContext('2d');
             
-            // Dados dos últimos 7 dias
             const days = [];
             const labels = [];
             
@@ -416,7 +454,6 @@
                 }
             }
             
-            // Remove gráfico anterior se existir
             if (weeklyChart) {
                 weeklyChart.destroy();
             }
@@ -432,7 +469,7 @@
                             amount >= settings.dailyGoal ? 'var(--success)' : 
                             'var(--primary)'
                         ),
-                        borderColor: 'var(--dark)',
+                        borderColor: settings.darkMode ? 'var(--dark)' : 'var(--light-bg)',
                         borderWidth: 1
                     }]
                 },
@@ -444,10 +481,10 @@
                             beginAtZero: true,
                             max: settings.dailyGoal * 1.5,
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: settings.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                             },
                             ticks: {
-                                color: 'var(--text)'
+                                color: settings.darkMode ? 'var(--text)' : 'var(--light-text)'
                             }
                         },
                         x: {
@@ -455,7 +492,7 @@
                                 display: false
                             },
                             ticks: {
-                                color: 'var(--text)'
+                                color: settings.darkMode ? 'var(--text)' : 'var(--light-text)'
                             }
                         }
                     },
@@ -473,39 +510,32 @@
             const percentage = waterData.today.amount / settings.dailyGoal;
             const container = document.getElementById('message-container');
             
+            let message = '';
+            let type = '';
+            
             if (percentage >= 1) {
-                container.innerHTML = `
-                    <div class="message positive">
-                        Parabéns! Você atingiu sua meta diária! 🎉
-                    </div>
-                `;
+                message = 'Parabéns! Você atingiu sua meta diária! 🎉';
+                type = 'positive';
             } else if (percentage >= 0.5) {
-                container.innerHTML = `
-                    <div class="message">
-                        Continue assim! Falta pouco para sua meta! 💪
-                    </div>
-                `;
+                message = 'Continue assim! Falta pouco para sua meta! 💪';
+                type = '';
             } else if (waterData.today.amount > 0) {
-                container.innerHTML = `
-                    <div class="message negative">
-                        Você pode melhorar! Beba mais água! 💧
-                    </div>
-                `;
+                message = 'Você pode melhorar! Beba mais água! 💧';
+                type = 'negative';
             } else {
-                container.innerHTML = `
-                    <div class="message negative">
-                        Comece agora a registrar sua água! ⏰
-                    </div>
-                `;
+                message = 'Comece agora a registrar sua água! ⏰';
+                type = 'negative';
             }
+            
+            showMessage(message, type);
         }
 
         // Salva configurações
         function saveSettings() {
             const newGoal = parseInt(document.getElementById('daily-goal').value);
             
-            if (isNaN(newGoal) {
-                showMessage("Meta inválida!", "negative");
+            if (isNaN(newGoal) || newGoal < 500 || newGoal > 10000) {
+                showMessage("Meta inválida! Insira um valor entre 500 e 10000 ml.", "negative");
                 return;
             }
             
@@ -520,18 +550,19 @@
         // Alterna tema
         function toggleTheme() {
             settings.darkMode = !settings.darkMode;
+            document.body.classList.toggle('light-mode');
             
-            if (settings.darkMode) {
-                document.body.style.backgroundColor = '#34495e';
-                document.body.style.color = '#ecf0f1';
-                document.getElementById('theme-toggle').textContent = 'Modo Claro';
-            } else {
-                document.body.style.backgroundColor = '#ecf0f1';
-                document.body.style.color = '#2c3e50';
-                document.getElementById('theme-toggle').textContent = 'Modo Escuro';
-            }
+            document.getElementById('theme-toggle').textContent = settings.darkMode ? 'Modo Claro' : 'Modo Escuro';
+            
+            // Atualizar cores dos inputs para corresponder ao tema
+            document.querySelectorAll('input, select').forEach(el => {
+                el.style.backgroundColor = settings.darkMode ? 'var(--bg)' : 'var(--light-bg)';
+                el.style.color = settings.darkMode ? 'var(--text)' : 'var(--light-text)';
+                el.style.borderColor = settings.darkMode ? 'var(--dark)' : 'var(--light-text)';
+            });
             
             saveData();
+            renderChart(); // Atualiza as cores do gráfico
         }
 
         // Mostra mensagem
@@ -542,6 +573,17 @@
                     ${text}
                 </div>
             `;
+            
+            // Remove a mensagem após 3 segundos
+            setTimeout(() => {
+                const message = container.querySelector('.message');
+                if (message) {
+                    message.classList.add('hidden');
+                    setTimeout(() => {
+                        container.innerHTML = '';
+                    }, 500);
+                }
+            }, 3000);
         }
     </script>
 </body>
