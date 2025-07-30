@@ -3,58 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaTrack</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>HydroTrack - Controle de Água</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <style>
         :root {
-            --primary: #00b4d8;
-            --primary-dark: #0096c7;
-            --secondary: #90e0ef;
-            --light: #caf0f8;
-            --dark: #03045e;
+            --primary: #3498db;
+            --secondary: #2980b9;
             --success: #2ecc71;
-            --warning: #f39c12;
             --danger: #e74c3c;
-            --text: #333;
-            --bg: #f8f9fa;
-            --card: white;
-            --shadow: rgba(0, 0, 0, 0.1);
-        }
-
-        .dark-mode {
-            --primary: #00b4d8;
-            --primary-dark: #0096c7;
-            --secondary: #0077b6;
-            --light: #03045e;
-            --dark: #caf0f8;
-            --success: #27ae60;
-            --warning: #e67e22;
-            --danger: #c0392b;
-            --text: #f8f9fa;
-            --bg: #121212;
-            --card: #1e1e1e;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #ecf0f1;
+            --bg: #34495e;
+            --card: #2c3e50;
             --shadow: rgba(0, 0, 0, 0.3);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            transition: all 0.3s ease;
+            margin: 0;
             padding: 20px;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
@@ -63,84 +38,28 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--primary);
         }
 
         h1 {
             color: var(--primary);
-            font-size: 2.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        h1 i {
-            font-size: 2.5rem;
-        }
-
-        h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            margin: 0;
         }
 
         .toggle-btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.3s;
-        }
-
-        .toggle-btn:hover {
-            transform: rotate(30deg);
-            background-color: var(--primary-dark);
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 20px;
         }
 
         .card {
             background-color: var(--card);
-            border-radius: 15px;
+            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 5px 15px var(--shadow);
-            transition: transform 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .main-card {
-            grid-column: span 4;
-        }
-
-        .chart-card {
-            grid-column: span 8;
-            min-height: 400px;
-        }
-
-        .small-card {
-            grid-column: span 4;
-            min-height: 200px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px var(--shadow);
         }
 
         .progress-container {
@@ -149,128 +68,66 @@
 
         .progress-bar {
             height: 30px;
-            background-color: var(--light);
+            background-color: var(--dark);
             border-radius: 15px;
             overflow: hidden;
-            position: relative;
         }
 
         .progress {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background-color: var(--primary);
             width: 0%;
-            transition: width 1s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, 
-                          rgba(255,255,255,0.1) 0%, 
-                          rgba(255,255,255,0.3) 50%, 
-                          rgba(255,255,255,0.1) 100%);
-            animation: shine 2s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
             font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .stats {
             display: flex;
             justify-content: space-between;
-            margin-top: 15px;
+            margin-top: 20px;
         }
 
         .stat {
             text-align: center;
+            flex: 1;
         }
 
         .stat-value {
-            font-size: 1.8rem;
+            font-size: 24px;
             font-weight: bold;
             color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--text);
-            opacity: 0.8;
-        }
-
-        .water-control {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 25px;
         }
 
         .water-input {
             display: flex;
             gap: 10px;
+            margin-top: 20px;
         }
 
-        .water-input input {
+        input, select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--dark);
+            background-color: var(--bg);
+            color: var(--text);
             flex: 1;
-            padding: 12px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: var(--card);
-            color: var(--text);
         }
 
-        .water-input select {
-            padding: 12px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: var(--card);
-            color: var(--text);
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
+        button {
             background-color: var(--primary);
             color: white;
-            font-size: 1rem;
-            font-weight: bold;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
-        .btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px var(--shadow);
-        }
-
-        .btn i {
-            font-size: 1.2rem;
+        button:hover {
+            background-color: var(--secondary);
         }
 
         .quick-actions {
@@ -282,388 +139,151 @@
         .quick-btn {
             flex: 1;
             padding: 10px;
-            background-color: var(--light);
-            border: none;
-            border-radius: 8px;
+            background-color: var(--dark);
+            border-radius: 5px;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
         }
 
         .quick-btn:hover {
-            background-color: var(--secondary);
-            transform: translateY(-3px);
-        }
-
-        .quick-btn i {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .quick-btn span {
-            font-size: 0.8rem;
-            color: var(--text);
-        }
-
-        .message-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background-color: var(--light);
-            text-align: center;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: var(--primary-dark);
-        }
-
-        .message-text {
-            font-size: 0.9rem;
-        }
-
-        .positive {
-            background-color: rgba(46, 204, 113, 0.2);
-            border-left: 5px solid var(--success);
-        }
-
-        .neutral {
-            background-color: rgba(243, 156, 18, 0.2);
-            border-left: 5px solid var(--warning);
-        }
-
-        .negative {
-            background-color: rgba(231, 76, 60, 0.2);
-            border-left: 5px solid var(--danger);
+            background-color: var(--primary);
         }
 
         .chart-container {
-            position: relative;
-            height: 100%;
-            width: 100%;
+            height: 300px;
+            margin-top: 20px;
         }
 
-        .trophy {
-            font-size: 3rem;
-            color: gold;
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: var(--dark);
             text-align: center;
-            margin: 20px 0;
-            animation: bounce 2s infinite;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+        .positive {
+            border-left: 5px solid var(--success);
         }
 
-        .achievement {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: var(--light);
-        }
-
-        .achievement i {
-            font-size: 1.5rem;
-            color: gold;
-        }
-
-        .achievement-text {
-            font-size: 0.9rem;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Animações */
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .shake {
-            animation: shake 0.5s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-
-        /* Responsividade */
-        @media (max-width: 1024px) {
-            .main-card {
-                grid-column: span 6;
-            }
-            .chart-card {
-                grid-column: span 6;
-            }
-            .small-card {
-                grid-column: span 6;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-card, .chart-card, .small-card {
-                grid-column: span 12;
-            }
+        .negative {
+            border-left: 5px solid var(--danger);
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-tint"></i> AquaTrack</h1>
-            <div class="toggle-container">
-                <button class="toggle-btn" id="theme-toggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
+            <h1>💧 HydroTrack</h1>
+            <button class="toggle-btn" id="theme-toggle">Modo Claro</button>
         </header>
 
-        <div class="dashboard">
-            <!-- Card Principal -->
-            <div class="card main-card">
-                <h2>Seu Progresso Hoje</h2>
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress" id="water-progress">
-                            <div class="progress-text" id="progress-text">0%</div>
-                        </div>
-                    </div>
+        <div class="card">
+            <h2>Seu Progresso Hoje</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="water-progress">0%</div>
                 </div>
-                
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-value" id="today-consumption">0 ml</div>
-                        <div class="stat-label">Consumido</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="today-goal">2000 ml</div>
-                        <div class="stat-label">Meta</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="today-remaining">2000 ml</div>
-                        <div class="stat-label">Faltando</div>
-                    </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="today-consumption">0 ml</div>
+                    <div>Consumido</div>
                 </div>
-
-                <div class="water-control">
-                    <div class="water-input">
-                        <input type="number" id="water-amount" min="50" max="1000" value="200" placeholder="Quantidade">
-                        <select id="water-unit">
-                            <option value="ml">ml</option>
-                            <option value="copos">copos</option>
-                            <option value="garrafas">garrafas</option>
-                        </select>
-                    </div>
-                    <button class="btn" id="add-water-btn">
-                        <i class="fas fa-plus"></i> Registrar Água Bebida
-                    </button>
+                <div class="stat">
+                    <div class="stat-value" id="today-goal">2000 ml</div>
+                    <div>Meta</div>
                 </div>
-
-                <div class="quick-actions">
-                    <div class="quick-btn" data-amount="200">
-                        <i class="fas fa-glass-water"></i>
-                        <span>Copo (200ml)</span>
-                    </div>
-                    <div class="quick-btn" data-amount="300">
-                        <i class="fas fa-wine-bottle"></i>
-                        <span>Garrafa (300ml)</span>
-                    </div>
-                    <div class="quick-btn" data-amount="500">
-                        <i class="fas fa-bottle-water"></i>
-                        <span>Garrafa (500ml)</span>
-                    </div>
-                </div>
-
-                <div id="message-container">
-                    <!-- Mensagens serão inseridas aqui via JavaScript -->
+                <div class="stat">
+                    <div class="stat-value" id="today-remaining">2000 ml</div>
+                    <div>Faltando</div>
                 </div>
             </div>
 
-            <!-- Gráfico Semanal -->
-            <div class="card chart-card">
-                <h2>Seu Consumo Semanal</h2>
-                <div class="chart-container">
-                    <canvas id="weekly-chart"></canvas>
+            <div class="water-input">
+                <input type="number" id="water-amount" min="1" value="200" placeholder="Quantidade">
+                <select id="water-unit">
+                    <option value="ml">ml</option>
+                    <option value="copos">copos (200ml)</option>
+                    <option value="garrafas">garrafas (500ml)</option>
+                </select>
+                <button id="add-water-btn">+</button>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-btn" data-amount="200">
+                    <div>Copo (200ml)</div>
+                </div>
+                <div class="quick-btn" data-amount="300">
+                    <div>Garrafa (300ml)</div>
+                </div>
+                <div class="quick-btn" data-amount="500">
+                    <div>Garrafa (500ml)</div>
                 </div>
             </div>
 
-            <!-- Conquistas -->
-            <div class="card small-card">
-                <h2>Conquistas</h2>
-                <div id="achievements-container">
-                    <div class="achievement">
-                        <i class="fas fa-medal"></i>
-                        <div class="achievement-text">Beba 2000ml em um dia para desbloquear</div>
-                    </div>
-                </div>
-            </div>
+            <div id="message-container"></div>
+        </div>
 
-            <!-- Gráfico Mensal -->
-            <div class="card chart-card">
-                <h2>Seu Consumo Mensal</h2>
-                <div class="chart-container">
-                    <canvas id="monthly-chart"></canvas>
-                </div>
+        <div class="card">
+            <h2>Seu Consumo Semanal</h2>
+            <div class="chart-container">
+                <canvas id="weekly-chart"></canvas>
             </div>
+        </div>
 
-            <!-- Estatísticas -->
-            <div class="card small-card">
-                <h2>Estatísticas</h2>
-                <div class="stats" style="flex-wrap: wrap;">
-                    <div class="stat" style="width: 50%;">
-                        <div class="stat-value" id="streak-days">0</div>
-                        <div class="stat-label">Dias consecutivos</div>
-                    </div>
-                    <div class="stat" style="width: 50%;">
-                        <div class="stat-value" id="weekly-avg">0 ml</div>
-                        <div class="stat-label">Média semanal</div>
-                    </div>
-                    <div class="stat" style="width: 50%;">
-                        <div class="stat-value" id="monthly-avg">0 ml</div>
-                        <div class="stat-label">Média mensal</div>
-                    </div>
-                    <div class="stat" style="width: 50%;">
-                        <div class="stat-value" id="total-days">0</div>
-                        <div class="stat-label">Dias registrados</div>
-                    </div>
-                </div>
+        <div class="card">
+            <h2>Configurações</h2>
+            <div style="margin-bottom: 15px;">
+                <label for="daily-goal">Meta diária (ml):</label>
+                <input type="number" id="daily-goal" min="500" value="2000" style="width: 100%; margin-top: 5px;">
             </div>
-
-            <!-- Meta Diária -->
-            <div class="card small-card">
-                <h2>Configurações</h2>
-                <div style="margin-bottom: 15px;">
-                    <label for="daily-goal">Meta diária (ml):</label>
-                    <input type="number" id="daily-goal" min="500" max="5000" value="2000" class="water-input" style="width: 100%; margin-top: 5px;">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label for="cup-size">Tamanho do copo (ml):</label>
-                    <input type="number" id="cup-size" min="50" max="500" value="200" class="water-input" style="width: 100%; margin-top: 5px;">
-                </div>
-                <button class="btn" id="save-settings-btn" style="width: 100%;">
-                    <i class="fas fa-save"></i> Salvar Configurações
-                </button>
-            </div>
+            <button id="save-settings-btn" style="width: 100%;">Salvar Configurações</button>
         </div>
     </div>
 
     <script>
-        // Configurações iniciais
+        // Configurações
         const settings = {
             dailyGoal: 2000,
-            cupSize: 200,
-            darkMode: false
+            darkMode: true
         };
 
-        // Dados de consumo
+        // Dados
         let waterData = {
             today: {
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toLocaleDateString('pt-BR'),
                 amount: 0,
                 entries: []
             },
-            history: [],
-            streak: 0,
-            achievements: []
+            history: []
         };
-
-        // Frases motivacionais e de cobrança
-        const messages = {
-            positive: [
-                "Incrível! Você está hidratado como um campeão! 🏆",
-                "Água é vida, e você está vivendo bem! 💧",
-                "Parabéns! Seu corpo agradece por essa hidratação! 🙌",
-                "Meta atingida! Você é uma máquina de beber água! 🤖",
-                "Nada pode parar você! Até a meta treme! 💪"
-            ],
-            neutral: [
-                "Você está no caminho certo! Mais um pouco! 🚀",
-                "Continue assim! Seu corpo merece essa hidratação! 💦",
-                "A cada gole, você fica mais saudável! 🌟",
-                "A meta está próxima! Você consegue! ✨",
-                "Água é essencial, e você está mandando bem! 👍"
-            ],
-            negative: [
-                "Ei, seu corpo precisa de água! Não esqueça! ⚠️",
-                "Hidratação baixa! Vamos melhorar isso? 💧",
-                "Seu corpo está pedindo água! Ouça ele! 👂",
-                "Não deixe para depois! Beba água agora! ⏰",
-                "Cuidado! Você está abaixo da meta hoje! 🚨"
-            ],
-            veryNegative: [
-                "ALERTA: Hidratação crítica! Beba água IMEDIATAMENTE! 🆘",
-                "Sério? Você quase não bebeu água hoje! 😱",
-                "Isso é preocupante! Seu corpo precisa de água URGENTE! 💢",
-                "Você está se sabotando! Hidrate-se AGORA! ⚡",
-                "Pare tudo o que está fazendo e beba água! 🛑"
-            ]
-        };
-
-        // Conquistas possíveis
-        const achievementsList = [
-            { id: 'first_step', name: 'Primeiros Passos', description: 'Bebeu 500ml em um dia', goal: 500, icon: 'fa-star', achieved: false },
-            { id: 'half_way', name: 'No Caminho', description: 'Bebeu 1000ml em um dia', goal: 1000, icon: 'fa-thumbs-up', achieved: false },
-            { id: 'goal_reached', name: 'Meta Atingida', description: 'Bebeu 2000ml em um dia', goal: 2000, icon: 'fa-trophy', achieved: false },
-            { id: 'overachiever', name: 'Excesso de Zelo', description: 'Bebeu 3000ml em um dia', goal: 3000, icon: 'fa-medal', achieved: false },
-            { id: 'three_day_streak', name: 'Três Dias', description: 'Atingiu a meta por 3 dias seguidos', goal: 3, icon: 'fa-fire', type: 'streak', achieved: false },
-            { id: 'week_streak', name: 'Uma Semana', description: 'Atingiu a meta por 7 dias seguidos', goal: 7, icon: 'fa-bolt', type: 'streak', achieved: false },
-            { id: 'month_streak', name: 'Um Mês', description: 'Atingiu a meta por 30 dias seguidos', goal: 30, icon: 'fa-shield-alt', type: 'streak', achieved: false }
-        ];
 
         // Gráficos
-        let weeklyChart, monthlyChart;
+        let weeklyChart;
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setupEventListeners();
             updateUI();
-            renderCharts();
-            checkAchievements();
-            showMotivationalMessage(); // Mostra mensagem inicial
+            renderChart();
         });
 
         // Carrega dados do localStorage
         function loadData() {
-            const savedSettings = localStorage.getItem('aquaTrackSettings');
+            const savedSettings = localStorage.getItem('hydroTrackSettings');
             if (savedSettings) {
                 Object.assign(settings, JSON.parse(savedSettings));
                 document.getElementById('daily-goal').value = settings.dailyGoal;
-                document.getElementById('cup-size').value = settings.cupSize;
                 
-                // Aplica o modo escuro se necessário
-                if (settings.darkMode) {
-                    document.body.classList.add('dark-mode');
-                    document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+                if (!settings.darkMode) {
+                    toggleTheme();
                 }
             }
             
-            const savedWaterData = localStorage.getItem('aquaTrackData');
+            const savedWaterData = localStorage.getItem('hydroTrackData');
             if (savedWaterData) {
                 const parsedData = JSON.parse(savedWaterData);
                 
@@ -671,21 +291,12 @@
                 if (parsedData.today && parsedData.history) {
                     waterData = parsedData;
                     
-                    // Verifica se os dados de hoje estão atualizados
-                    const today = new Date().toISOString().split('T')[0];
+                    // Verifica se é um novo dia
+                    const today = new Date().toLocaleDateString('pt-BR');
                     if (waterData.today.date !== today) {
-                        // Move os dados de hoje para o histórico
+                        // Salva o dia anterior no histórico
                         if (waterData.today.amount > 0) {
                             waterData.history.push(waterData.today);
-                        }
-                        
-                        // Verifica se atingiu a meta no dia anterior para calcular sequência
-                        const yesterday = waterData.today;
-                        if (yesterday.amount >= settings.dailyGoal) {
-                            if (!waterData.streak) waterData.streak = 0;
-                            waterData.streak++;
-                        } else {
-                            waterData.streak = 0;
                         }
                         
                         // Cria novo registro para hoje
@@ -703,44 +314,29 @@
 
         // Salva dados no localStorage
         function saveData() {
-            localStorage.setItem('aquaTrackSettings', JSON.stringify(settings));
-            localStorage.setItem('aquaTrackData', JSON.stringify(waterData));
+            localStorage.setItem('hydroTrackSettings', JSON.stringify(settings));
+            localStorage.setItem('hydroTrackData', JSON.stringify(waterData));
         }
 
-        // Configura os event listeners
+        // Configura eventos
         function setupEventListeners() {
-            // Botão para adicionar água
             document.getElementById('add-water-btn').addEventListener('click', addWaterFromInput);
             
-            // Botões rápidos
             document.querySelectorAll('.quick-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const amount = parseInt(btn.getAttribute('data-amount'));
                     addWater(amount);
-                    animateQuickButton(btn);
                 });
             });
             
-            // Botão para salvar configurações
             document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
-            
-            // Botão para alternar tema
             document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
             
-            // Permite adicionar água pressionando Enter no input
             document.getElementById('water-amount').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     addWaterFromInput();
                 }
             });
-        }
-
-        // Anima o botão rápido quando clicado
-        function animateQuickButton(btn) {
-            btn.classList.add('pulse');
-            setTimeout(() => {
-                btn.classList.remove('pulse');
-            }, 1000);
         }
 
         // Adiciona água a partir do input
@@ -749,123 +345,39 @@
             const amount = parseInt(amountInput.value);
             const unit = document.getElementById('water-unit').value;
             
-            if (isNaN(amount) {
-                showMessage("Por favor, insira uma quantidade válida!", "negative");
-                amountInput.classList.add('shake');
-                setTimeout(() => {
-                    amountInput.classList.remove('shake');
-                }, 500);
-                return;
-            }
-            
-            if (amount <= 0) {
-                showMessage("A quantidade deve ser maior que zero!", "negative");
-                amountInput.classList.add('shake');
-                setTimeout(() => {
-                    amountInput.classList.remove('shake');
-                }, 500);
+            if (isNaN(amount) || amount <= 0) {
+                showMessage("Digite uma quantidade válida!", "negative");
                 return;
             }
             
             let mlAmount = amount;
-            if (unit === 'copos') mlAmount = amount * settings.cupSize;
-            if (unit === 'garrafas') mlAmount = amount * 500; // Assumindo garrafa de 500ml
+            if (unit === 'copos') mlAmount = amount * 200;
+            if (unit === 'garrafas') mlAmount = amount * 500;
             
             addWater(mlAmount);
-            
-            // Reseta o input para o valor padrão
-            amountInput.value = unit === 'copos' ? '1' : '200';
+            amountInput.value = '200';
         }
 
         // Adiciona água ao registro
         function addWater(amount) {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            // Verifica se amount é um número válido
-            if (isNaN(amount) {
-                console.error("Valor inválido para adicionar água:", amount);
-                return;
-            }
-            
             waterData.today.amount += amount;
             waterData.today.entries.push({
-                time: timeStr,
+                time: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
                 amount: amount
             });
             
-            // Verifica conquistas
-            checkAchievements();
-            
             saveData();
             updateUI();
-            renderCharts();
-            
-            // Mostra feedback visual
-            const progress = document.getElementById('water-progress');
-            progress.classList.add('pulse');
-            setTimeout(() => {
-                progress.classList.remove('pulse');
-            }, 1000);
-            
-            // Mostra mensagem motivacional
+            renderChart();
             showMotivationalMessage();
-        }
-
-        // Mostra mensagem motivacional apropriada
-        function showMotivationalMessage() {
-            const percentage = (waterData.today.amount / settings.dailyGoal) * 100;
-            let messageType = 'neutral';
-            let messagesToUse = messages.neutral;
-            
-            if (percentage >= 100) {
-                messageType = 'positive';
-                messagesToUse = messages.positive;
-            } else if (percentage < 30 && waterData.today.amount > 0) {
-                messageType = 'veryNegative';
-                messagesToUse = messages.veryNegative;
-            } else if (percentage < 60) {
-                messageType = 'negative';
-                messagesToUse = messages.negative;
-            }
-            
-            const randomMessage = messagesToUse[Math.floor(Math.random() * messagesToUse.length)];
-            showMessage(randomMessage, messageType);
-        }
-
-        // Exibe uma mensagem na interface
-        function showMessage(text, type) {
-            const container = document.getElementById('message-container');
-            
-            // Só mostra mensagem se houver algum consumo ou se for muito negativo
-            if (waterData.today.amount > 0 || type === 'veryNegative') {
-                container.innerHTML = `
-                    <div class="message-box ${type}">
-                        <div class="message-title">${type === 'positive' ? '🎉 Parabéns!' : type === 'veryNegative' ? '⚠️ Alerta!' : '💡 Lembrete'}</div>
-                        <div class="message-text">${text}</div>
-                    </div>
-                `;
-                
-                // Anima a mensagem
-                anime({
-                    targets: container.querySelector('.message-box'),
-                    opacity: [0, 1],
-                    translateY: [20, 0],
-                    duration: 500,
-                    easing: 'easeOutQuad'
-                });
-            }
         }
 
         // Atualiza a interface
         function updateUI() {
             const percentage = Math.min(Math.round((waterData.today.amount / settings.dailyGoal) * 100), 100);
             
-            // Atualiza barra de progresso
             document.getElementById('water-progress').style.width = `${percentage}%`;
-            document.getElementById('progress-text').textContent = `${percentage}%`;
-            
-            // Atualiza estatísticas
+            document.getElementById('water-progress').textContent = `${percentage}%`;
             document.getElementById('today-consumption').textContent = `${waterData.today.amount} ml`;
             document.getElementById('today-goal').textContent = `${settings.dailyGoal} ml`;
             
@@ -877,73 +389,34 @@
                 document.getElementById('today-remaining').style.color = 'var(--success)';
             } else {
                 document.getElementById('today-remaining').textContent = `${remaining} ml`;
-                document.getElementById('today-remaining').style.color = remaining > settings.dailyGoal * 0.5 ? 'var(--danger)' : 'var(--primary)';
-            }
-            
-            // Atualiza estatísticas gerais
-            updateGeneralStats();
-        }
-
-        // Atualiza estatísticas gerais
-        function updateGeneralStats() {
-            // Dias consecutivos
-            const streak = waterData.streak || 0;
-            document.getElementById('streak-days').textContent = streak;
-            
-            // Médias
-            if (waterData.history.length > 0) {
-                // Média semanal (últimos 7 dias)
-                const lastWeek = waterData.history.slice(-7);
-                const weekTotal = lastWeek.reduce((sum, day) => sum + day.amount, 0) + waterData.today.amount;
-                const weekAvg = Math.round(weekTotal / (lastWeek.length + 1));
-                document.getElementById('weekly-avg').textContent = `${weekAvg} ml`;
-                
-                // Média mensal (últimos 30 dias)
-                const lastMonth = waterData.history.slice(-30);
-                const monthTotal = lastMonth.reduce((sum, day) => sum + day.amount, 0) + waterData.today.amount;
-                const monthAvg = Math.round(monthTotal / (lastMonth.length + 1));
-                document.getElementById('monthly-avg').textContent = `${monthAvg} ml`;
-                
-                // Total de dias registrados
-                document.getElementById('total-days').textContent = waterData.history.length + (waterData.today.amount > 0 ? 1 : 0);
+                document.getElementById('today-remaining').style.color = 'var(--primary)';
             }
         }
 
-        // Renderiza os gráficos
-        function renderCharts() {
-            renderWeeklyChart();
-            renderMonthlyChart();
-        }
-
-        // Renderiza o gráfico semanal
-        function renderWeeklyChart() {
+        // Renderiza o gráfico
+        function renderChart() {
             const ctx = document.getElementById('weekly-chart').getContext('2d');
             
-            // Cria um array com os últimos 7 dias (incluindo hoje)
+            // Dados dos últimos 7 dias
             const days = [];
             const labels = [];
-            const today = new Date();
             
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
-                date.setDate(today.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
-                const dayName = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][date.getDay()];
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString('pt-BR');
                 
-                labels.push(dayName);
+                labels.push(date.toLocaleDateString('pt-BR', {weekday: 'short'}));
                 
-                let amount = 0;
-                if (i === 0) {
-                    amount = waterData.today.amount;
+                if (dateStr === waterData.today.date) {
+                    days.push(waterData.today.amount);
                 } else {
                     const dayData = waterData.history.find(d => d.date === dateStr);
-                    if (dayData) amount = dayData.amount;
+                    days.push(dayData ? dayData.amount : 0);
                 }
-                
-                days.push(amount);
             }
             
-            // Destrói o gráfico anterior se existir
+            // Remove gráfico anterior se existir
             if (weeklyChart) {
                 weeklyChart.destroy();
             }
@@ -956,15 +429,10 @@
                         label: 'Consumo de Água (ml)',
                         data: days,
                         backgroundColor: days.map(amount => 
-                            amount >= settings.dailyGoal ? 'rgba(46, 204, 113, 0.7)' : 
-                            amount >= settings.dailyGoal * 0.7 ? 'rgba(52, 152, 219, 0.7)' : 
-                            'rgba(231, 76, 60, 0.7)'
+                            amount >= settings.dailyGoal ? 'var(--success)' : 
+                            'var(--primary)'
                         ),
-                        borderColor: days.map(amount => 
-                            amount >= settings.dailyGoal ? 'rgba(46, 204, 113, 1)' : 
-                            amount >= settings.dailyGoal * 0.7 ? 'rgba(52, 152, 219, 1)' : 
-                            'rgba(231, 76, 60, 1)'
-                        ),
+                        borderColor: 'var(--dark)',
                         borderWidth: 1
                     }]
                 },
@@ -974,280 +442,106 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            suggestedMax: settings.dailyGoal * 1.5,
+                            max: settings.dailyGoal * 1.5,
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'var(--text)'
                             }
                         },
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                color: 'var(--text)'
                             }
                         }
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeOutQuart'
                     },
                     plugins: {
                         legend: {
                             display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const percentage = Math.round((context.raw / settings.dailyGoal) * 100);
-                                    return `${context.raw} ml (${percentage}%)`;
-                                }
-                            }
                         }
                     }
                 }
             });
         }
 
-        // Renderiza o gráfico mensal
-        function renderMonthlyChart() {
-            const ctx = document.getElementById('monthly-chart').getContext('2d');
-            
-            // Agrupa os dados por semana no mês atual
-            const weeks = [];
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            
-            let currentWeekStart = new Date(firstDay);
-            let weekNumber = 1;
-            
-            while (currentWeekStart <= lastDay) {
-                const currentWeekEnd = new Date(currentWeekStart);
-                currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
-                if (currentWeekEnd > lastDay) currentWeekEnd = lastDay;
-                
-                // Calcula o total para esta semana
-                let weekTotal = 0;
-                let daysInWeek = 0;
-                
-                for (let d = new Date(currentWeekStart); d <= currentWeekEnd; d.setDate(d.getDate() + 1)) {
-                    const dateStr = d.toISOString().split('T')[0];
-                    
-                    if (dateStr === waterData.today.date) {
-                        weekTotal += waterData.today.amount;
-                        daysInWeek++;
-                    } else {
-                        const dayData = waterData.history.find(item => item.date === dateStr);
-                        if (dayData) {
-                            weekTotal += dayData.amount;
-                            daysInWeek++;
-                        }
-                    }
-                }
-                
-                if (daysInWeek > 0) {
-                    weeks.push({
-                        label: `Semana ${weekNumber}`,
-                        value: weekTotal / daysInWeek // Média diária da semana
-                    });
-                } else {
-                    weeks.push({
-                        label: `Semana ${weekNumber}`,
-                        value: 0
-                    });
-                }
-                
-                weekNumber++;
-                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-            }
-            
-            // Destrói o gráfico anterior se existir
-            if (monthlyChart) {
-                monthlyChart.destroy();
-            }
-            
-            monthlyChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: weeks.map(w => w.label),
-                    datasets: [{
-                        label: 'Média Diária de Consumo (ml)',
-                        data: weeks.map(w => w.value),
-                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                        borderColor: 'rgba(52, 152, 219, 1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: weeks.map(w => 
-                            w.value >= settings.dailyGoal ? 'rgba(46, 204, 113, 1)' : 
-                            w.value >= settings.dailyGoal * 0.7 ? 'rgba(52, 152, 219, 1)' : 
-                            'rgba(231, 76, 60, 1)'
-                        ),
-                        pointRadius: 6,
-                        pointHoverRadius: 8
-                    }, {
-                        label: 'Meta Diária',
-                        data: weeks.map(() => settings.dailyGoal),
-                        borderColor: 'rgba(243, 156, 18, 0.7)',
-                        borderWidth: 1,
-                        borderDash: [5, 5],
-                        pointRadius: 0,
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            suggestedMax: settings.dailyGoal * 1.5,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeOutQuart'
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    if (context.datasetIndex === 0) {
-                                        const percentage = Math.round((context.raw / settings.dailyGoal) * 100);
-                                        return `Média: ${Math.round(context.raw)} ml (${percentage}%)`;
-                                    } else {
-                                        return `Meta: ${context.raw} ml`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Verifica e atualiza conquistas
-        function checkAchievements() {
-            if (!waterData.achievements) waterData.achievements = [];
-            
-            // Verifica conquistas baseadas em consumo diário
-            achievementsList.forEach(achievement => {
-                if (achievement.type !== 'streak' && !waterData.achievements.includes(achievement.id)) {
-                    if (waterData.today.amount >= achievement.goal) {
-                        waterData.achievements.push(achievement.id);
-                        showAchievementUnlocked(achievement);
-                    }
-                }
-            });
-            
-            // Verifica conquistas baseadas em sequência
-            const streak = waterData.streak || 0;
-            achievementsList.forEach(achievement => {
-                if (achievement.type === 'streak' && !waterData.achievements.includes(achievement.id)) {
-                    if (streak >= achievement.goal) {
-                        waterData.achievements.push(achievement.id);
-                        showAchievementUnlocked(achievement);
-                    }
-                }
-            });
-            
-            // Atualiza a exibição das conquistas
-            renderAchievements();
-        }
-
-        // Mostra animação de conquista desbloqueada
-        function showAchievementUnlocked(achievement) {
+        // Mostra mensagem motivacional
+        function showMotivationalMessage() {
+            const percentage = waterData.today.amount / settings.dailyGoal;
             const container = document.getElementById('message-container');
-            container.innerHTML = `
-                <div class="message-box positive">
-                    <div class="trophy"><i class="fas ${achievement.icon}"></i></div>
-                    <div class="message-title">CONQUISTA DESBLOQUEADA!</div>
-                    <div class="message-text">${achievement.name}: ${achievement.description}</div>
-                </div>
-            `;
             
-            // Animação especial
-            anime({
-                targets: container.querySelector('.trophy'),
-                scale: [0, 1],
-                rotate: [0, 360],
-                duration: 1000,
-                easing: 'easeOutElastic'
-            });
-        }
-
-        // Renderiza a lista de conquistas
-        function renderAchievements() {
-            const container = document.getElementById('achievements-container');
-            container.innerHTML = '';
-            
-            achievementsList.forEach(achievement => {
-                const achieved = waterData.achievements.includes(achievement.id);
-                
-                const element = document.createElement('div');
-                element.className = 'achievement';
-                element.innerHTML = `
-                    <i class="fas ${achievement.icon}" style="${achieved ? 'color: gold;' : 'color: var(--light);'}"></i>
-                    <div class="achievement-text" style="${achieved ? 'font-weight: bold;' : 'opacity: 0.7;'}">
-                        ${achieved ? achievement.name : achievement.description}
+            if (percentage >= 1) {
+                container.innerHTML = `
+                    <div class="message positive">
+                        Parabéns! Você atingiu sua meta diária! 🎉
                     </div>
                 `;
-                
-                container.appendChild(element);
-            });
+            } else if (percentage >= 0.5) {
+                container.innerHTML = `
+                    <div class="message">
+                        Continue assim! Falta pouco para sua meta! 💪
+                    </div>
+                `;
+            } else if (waterData.today.amount > 0) {
+                container.innerHTML = `
+                    <div class="message negative">
+                        Você pode melhorar! Beba mais água! 💧
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="message negative">
+                        Comece agora a registrar sua água! ⏰
+                    </div>
+                `;
+            }
         }
 
-        // Salva as configurações
+        // Salva configurações
         function saveSettings() {
-            const dailyGoalInput = document.getElementById('daily-goal');
-            const cupSizeInput = document.getElementById('cup-size');
+            const newGoal = parseInt(document.getElementById('daily-goal').value);
             
-            settings.dailyGoal = parseInt(dailyGoalInput.value) || 2000;
-            settings.cupSize = parseInt(cupSizeInput.value) || 200;
-            
-            // Validação básica
-            if (settings.dailyGoal < 500) {
-                showMessage("Meta diária muito baixa! Recomendamos pelo menos 500ml.", "negative");
-                dailyGoalInput.classList.add('shake');
-                setTimeout(() => dailyGoalInput.classList.remove('shake'), 500);
+            if (isNaN(newGoal) {
+                showMessage("Meta inválida!", "negative");
                 return;
             }
             
-            if (settings.cupSize < 50) {
-                showMessage("Tamanho do copo muito pequeno! Use pelo menos 50ml.", "negative");
-                cupSizeInput.classList.add('shake');
-                setTimeout(() => cupSizeInput.classList.remove('shake'), 500);
-                return;
-            }
-            
+            settings.dailyGoal = newGoal;
             saveData();
             updateUI();
-            renderCharts();
+            renderChart();
             
-            showMessage("Configurações salvas com sucesso!", "positive");
+            showMessage("Configurações salvas!", "positive");
         }
 
-        // Alterna entre tema claro e escuro
+        // Alterna tema
         function toggleTheme() {
             settings.darkMode = !settings.darkMode;
-            document.body.classList.toggle('dark-mode');
             
             if (settings.darkMode) {
-                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+                document.body.style.backgroundColor = '#34495e';
+                document.body.style.color = '#ecf0f1';
+                document.getElementById('theme-toggle').textContent = 'Modo Claro';
             } else {
-                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-moon"></i>';
+                document.body.style.backgroundColor = '#ecf0f1';
+                document.body.style.color = '#2c3e50';
+                document.getElementById('theme-toggle').textContent = 'Modo Escuro';
             }
             
             saveData();
-            
-            // Atualiza gráficos para o novo tema
-            renderCharts();
+        }
+
+        // Mostra mensagem
+        function showMessage(text, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `
+                <div class="message ${type}">
+                    ${text}
+                </div>
+            `;
         }
     </script>
 </body>
