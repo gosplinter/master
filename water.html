@@ -1,606 +1,1214 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pac-Man Neural</title>
+    <title>AquaTrack - Seu Amigo da Hidratação</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <style>
-        body {
+        :root {
+            --primary: #00b4d8;
+            --primary-dark: #0096c7;
+            --secondary: #90e0ef;
+            --light: #caf0f8;
+            --dark: #03045e;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --text: #333;
+            --bg: #f8f9fa;
+            --card: white;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode {
+            --primary: #00b4d8;
+            --primary-dark: #0096c7;
+            --secondary: #0077b6;
+            --light: #03045e;
+            --dark: #caf0f8;
+            --success: #27ae60;
+            --warning: #e67e22;
+            --danger: #c0392b;
+            --text: #f8f9fa;
+            --bg: #121212;
+            --card: #1e1e1e;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            height: 100vh;
-            background-color: #000;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 i {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toggle-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn:hover {
+            transform: rotate(30deg);
+            background-color: var(--primary-dark);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .main-card {
+            grid-column: span 4;
+        }
+
+        .chart-card {
+            grid-column: span 8;
+            min-height: 400px;
+        }
+
+        .small-card {
+            grid-column: span 4;
+            min-height: 200px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background-color: var(--light);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 1s ease;
+            position: relative;
             overflow: hidden;
         }
-        #gameCanvas {
-            display: block;
-        }
-        #modal {
+
+        .progress::after {
+            content: '';
             position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 10;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                          rgba(255,255,255,0.1) 0%, 
+                          rgba(255,255,255,0.3) 50%, 
+                          rgba(255,255,255,0.1) 100%);
+            animation: shine 2s infinite;
         }
-        #gameOver {
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #ff00ff;
-            font-family: 'Courier New', monospace;
-            font-size: 48px;
-            text-align: center;
-            display: none;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            display: none;
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .water-control {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .water-input {
+            display: flex;
             gap: 10px;
         }
-        .control-btn {
-            background: #00ff00;
+
+        .water-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--card);
+            color: var(--text);
+        }
+
+        .water-input select {
+            padding: 12px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--card);
+            color: var(--text);
+        }
+
+        .btn {
+            padding: 12px 20px;
             border: none;
+            border-radius: 8px;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px var(--shadow);
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--light);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quick-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-3px);
+        }
+
+        .quick-btn i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .quick-btn span {
+            font-size: 0.8rem;
+            color: var(--text);
+        }
+
+        .message-box {
+            margin-top: 20px;
             padding: 15px;
             border-radius: 10px;
-            cursor: pointer;
-            font-size: 18px;
+            background-color: var(--light);
+            text-align: center;
+            animation: fadeIn 0.5s ease;
         }
-        @media (max-width: 600px) {
-            #controls { display: flex; }
-            #modal { font-size: 16px; padding: 8px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--primary-dark);
+        }
+
+        .message-text {
+            font-size: 0.9rem;
+        }
+
+        .positive {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-left: 5px solid var(--success);
+        }
+
+        .neutral {
+            background-color: rgba(243, 156, 18, 0.2);
+            border-left: 5px solid var(--warning);
+        }
+
+        .negative {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-left: 5px solid var(--danger);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        .trophy {
+            font-size: 3rem;
+            color: gold;
+            text-align: center;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .achievement {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: var(--light);
+        }
+
+        .achievement i {
+            font-size: 1.5rem;
+            color: gold;
+        }
+
+        .achievement-text {
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Animações */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 1024px) {
+            .main-card {
+                grid-column: span 6;
+            }
+            .chart-card {
+                grid-column: span 6;
+            }
+            .small-card {
+                grid-column: span 6;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-card, .chart-card, .small-card {
+                grid-column: span 12;
+            }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="modal">
-        <div id="score">MuskCoins: 0</div>
-        <div id="lives">Lives: 3</div>
-        <div id="energy">Energy: 100%</div>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-tint"></i> AquaTrack</h1>
+            <div class="toggle-container">
+                <button class="toggle-btn" id="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <!-- Card Principal -->
+            <div class="card main-card">
+                <h2>Seu Progresso Hoje</h2>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress" id="water-progress">
+                            <div class="progress-text" id="progress-text">0%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="today-consumption">0 ml</div>
+                        <div class="stat-label">Consumido</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="today-goal">2000 ml</div>
+                        <div class="stat-label">Meta</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="today-remaining">2000 ml</div>
+                        <div class="stat-label">Faltando</div>
+                    </div>
+                </div>
+
+                <div class="water-control">
+                    <div class="water-input">
+                        <input type="number" id="water-amount" min="50" max="1000" value="200" placeholder="Quantidade">
+                        <select id="water-unit">
+                            <option value="ml">ml</option>
+                            <option value="copos">copos</option>
+                            <option value="garrafas">garrafas</option>
+                        </select>
+                    </div>
+                    <button class="btn" id="add-water-btn">
+                        <i class="fas fa-plus"></i> Adicionar Água
+                    </button>
+                </div>
+
+                <div class="quick-actions">
+                    <div class="quick-btn" data-amount="200">
+                        <i class="fas fa-glass-water"></i>
+                        <span>Copo (200ml)</span>
+                    </div>
+                    <div class="quick-btn" data-amount="300">
+                        <i class="fas fa-wine-bottle"></i>
+                        <span>Garrafa (300ml)</span>
+                    </div>
+                    <div class="quick-btn" data-amount="500">
+                        <i class="fas fa-bottle-water"></i>
+                        <span>Garrafa (500ml)</span>
+                    </div>
+                </div>
+
+                <div id="message-container">
+                    <!-- Mensagens serão inseridas aqui via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Gráfico Semanal -->
+            <div class="card chart-card">
+                <h2>Seu Consumo Semanal</h2>
+                <div class="chart-container">
+                    <canvas id="weekly-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Conquistas -->
+            <div class="card small-card">
+                <h2>Conquistas</h2>
+                <div id="achievements-container">
+                    <div class="achievement">
+                        <i class="fas fa-medal"></i>
+                        <div class="achievement-text">Beba 2000ml em um dia para desbloquear</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico Mensal -->
+            <div class="card chart-card">
+                <h2>Seu Consumo Mensal</h2>
+                <div class="chart-container">
+                    <canvas id="monthly-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="card small-card">
+                <h2>Estatísticas</h2>
+                <div class="stats" style="flex-wrap: wrap;">
+                    <div class="stat" style="width: 50%;">
+                        <div class="stat-value" id="streak-days">0</div>
+                        <div class="stat-label">Dias consecutivos</div>
+                    </div>
+                    <div class="stat" style="width: 50%;">
+                        <div class="stat-value" id="weekly-avg">0 ml</div>
+                        <div class="stat-label">Média semanal</div>
+                    </div>
+                    <div class="stat" style="width: 50%;">
+                        <div class="stat-value" id="monthly-avg">0 ml</div>
+                        <div class="stat-label">Média mensal</div>
+                    </div>
+                    <div class="stat" style="width: 50%;">
+                        <div class="stat-value" id="total-days">0</div>
+                        <div class="stat-label">Dias registrados</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meta Diária -->
+            <div class="card small-card">
+                <h2>Configurações</h2>
+                <div style="margin-bottom: 15px;">
+                    <label for="daily-goal">Meta diária (ml):</label>
+                    <input type="number" id="daily-goal" min="500" max="5000" value="2000" class="water-input" style="width: 100%; margin-top: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="cup-size">Tamanho do copo (ml):</label>
+                    <input type="number" id="cup-size" min="50" max="500" value="200" class="water-input" style="width: 100%; margin-top: 5px;">
+                </div>
+                <button class="btn" id="save-settings-btn" style="width: 100%;">
+                    <i class="fas fa-save"></i> Salvar Configurações
+                </button>
+            </div>
+        </div>
     </div>
-    <div id="gameOver">Neural Network Failure</div>
-    <div id="controls">
-        <button class="control-btn" ontouchstart="movePacman('up')" ontouchend="stopPacman()">↑</button>
-        <button class="control-btn" ontouchstart="movePacman('left')" ontouchend="stopPacman()">←</button>
-        <button class="control-btn" ontouchstart="movePacman('right')" ontouchend="stopPacman()">→</button>
-        <button class="control-btn" ontouchstart="movePacman('down')" ontouchend="stopPacman()">↓</button>
-    </div>
+
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreDisplay = document.getElementById('score');
-        const livesDisplay = document.getElementById('lives');
-        const energyDisplay = document.getElementById('energy');
-        const gameOverDisplay = document.getElementById('gameOver');
+        // Configurações iniciais
+        const settings = {
+            dailyGoal: 2000,
+            cupSize: 200,
+            darkMode: false
+        };
 
-        // Mapa (28x31)
-        const map = [
-            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,3,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,3,1],
-            [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
-            [1,2,1,0,0,1,2,1,0,0,0,1,2,1,1,2,1,0,0,0,1,2,1,0,0,1,2,1],
-            [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
-            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-            [1,2,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1],
-            [1,2,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1],
-            [1,2,2,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,2,2,1],
-            [1,1,1,1,1,1,2,1,1,2,1,1,0,1,1,0,1,1,2,1,1,2,1,1,1,1,1,1],
-            [0,0,0,0,0,1,2,1,1,2,1,1,0,0,0,0,1,1,2,1,1,2,1,0,0,0,0,0],
-            [0,0,0,0,0,1,2,1,1,0,0,0,0,0,0,0,0,0,0,1,1,2,1,0,0,0,0,0],
-            [0,0,0,0,0,1,2,1,1,0,1,1,1,0,0,0,1,1,1,0,1,2,1,0,0,0,0,0],
-            [1,1,1,1,1,1,2,1,1,0,1,0,0,0,0,0,0,0,1,0,1,2,1,1,1,1,1,1],
-            [1,2,2,2,2,2,2,2,2,0,1,0,0,0,0,0,0,0,1,0,2,2,2,2,2,2,2,1],
-            [1,2,1,1,1,1,2,1,1,0,1,1,1,1,1,1,1,1,1,0,1,2,1,1,1,1,2,1],
-            [1,2,1,1,1,1,2,1,1,0,1,1,1,1,1,1,1,1,1,0,1,2,1,1,1,1,2,1],
-            [1,2,2,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,2,2,1],
-            [1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1],
-            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-            [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
-            [1,2,1,0,0,1,2,1,0,0,0,1,2,1,1,2,1,0,0,0,1,2,1,0,0,1,2,1],
-            [1,2,1,1,2,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,2,1,2,1],
-            [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
-            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        // Dados de consumo
+        let waterData = {
+            today: {
+                date: new Date().toISOString().split('T')[0],
+                amount: 0,
+                entries: []
+            },
+            history: [],
+            achievements: []
+        };
+
+        // Frases motivacionais e de cobrança
+        const messages = {
+            positive: [
+                "Incrível! Você está hidratado como um campeão! 🏆",
+                "Água é vida, e você está vivendo bem! 💧",
+                "Parabéns! Seu corpo agradece por essa hidratação! 🙌",
+                "Meta atingida! Você é uma máquina de beber água! 🤖",
+                "Nada pode parar você! Até a meta treme! 💪"
+            ],
+            neutral: [
+                "Você está no caminho certo! Mais um pouco! 🚀",
+                "Continue assim! Seu corpo merece essa hidratação! 💦",
+                "A cada gole, você fica mais saudável! 🌟",
+                "A meta está próxima! Você consegue! ✨",
+                "Água é essencial, e você está mandando bem! 👍"
+            ],
+            negative: [
+                "Ei, seu corpo precisa de água! Não esqueça! ⚠️",
+                "Hidratação baixa! Vamos melhorar isso? 💧",
+                "Seu corpo está pedindo água! Ouça ele! 👂",
+                "Não deixe para depois! Beba água agora! ⏰",
+                "Cuidado! Você está abaixo da meta hoje! 🚨"
+            ],
+            veryNegative: [
+                "ALERTA: Hidratação crítica! Beba água IMEDIATAMENTE! 🆘",
+                "Sério? Você quase não bebeu água hoje! 😱",
+                "Isso é preocupante! Seu corpo precisa de água URGENTE! 💢",
+                "Você está se sabotando! Hidrate-se AGORA! ⚡",
+                "Pare tudo o que está fazendo e beba água! 🛑"
+            ]
+        };
+
+        // Conquistas possíveis
+        const achievementsList = [
+            { id: 'first_step', name: 'Primeiros Passos', description: 'Bebeu 500ml em um dia', goal: 500, icon: 'fa-star', achieved: false },
+            { id: 'half_way', name: 'No Caminho', description: 'Bebeu 1000ml em um dia', goal: 1000, icon: 'fa-thumbs-up', achieved: false },
+            { id: 'goal_reached', name: 'Meta Atingida', description: 'Bebeu 2000ml em um dia', goal: 2000, icon: 'fa-trophy', achieved: false },
+            { id: 'overachiever', name: 'Excesso de Zelo', description: 'Bebeu 3000ml em um dia', goal: 3000, icon: 'fa-medal', achieved: false },
+            { id: 'three_day_streak', name: 'Três Dias', description: 'Atingiu a meta por 3 dias seguidos', goal: 3, icon: 'fa-fire', type: 'streak', achieved: false },
+            { id: 'week_streak', name: 'Uma Semana', description: 'Atingiu a meta por 7 dias seguidos', goal: 7, icon: 'fa-bolt', type: 'streak', achieved: false },
+            { id: 'month_streak', name: 'Um Mês', description: 'Atingiu a meta por 30 dias seguidos', goal: 30, icon: 'fa-shield-alt', type: 'streak', achieved: false }
         ];
 
-        let tileSize = 20;
-        let pacman = { x: 14, y: 23, direction: 'right', nextDirection: null, directionQueue: [], speed: 0.18, energy: 100, pulse: 1, pulseTimer: 0 };
-        let pacman2 = { x: 14, y: 1, direction: null, speed: 0.18, energy: 100, pulse: 1, pulseTimer: 0 };
-        let ghosts = [
-            { x: 14, y: 11, direction: null, color: '#ff0000', target: () => ({ x: pacman.x, y: pacman.y }), inHouse: true, releaseTimer: 0, adaptFactor: 0.2 },
-            { x: 13, y: 11, direction: null, color: '#ff69b4', target: () => {
-                let tx = pacman.x, ty = pacman.y;
-                if (pacman.direction === 'up') ty -= 4;
-                if (pacman.direction === 'down') ty += 4;
-                if (pacman.direction === 'left') tx -= 4;
-                if (pacman.direction === 'right') tx += 4;
-                return { x: tx, y: ty };
-            }, inHouse: true, releaseTimer: 60, adaptFactor: 0.2 },
-            { x: 15, y: 11, direction: null, color: '#00ffff', target: () => {
-                let tx = pacman.x, ty = pacman.y;
-                if (pacman.direction === 'up') ty -= 2;
-                if (pacman.direction === 'down') ty += 2;
-                if (pacman.direction === 'left') tx -= 2;
-                if (pacman.direction === 'right') tx += 2;
-                return { x: tx * 2 - ghosts[0].x, y: ty * 2 - ghosts[0].y };
-            }, inHouse: true, releaseTimer: 120, adaptFactor: 0.2 },
-            { x: 14, y: 13, direction: null, color: '#ffa500', target: () => {
-                const dist = Math.abs(ghosts[3].x - pacman.x) + Math.abs(ghosts[3].y - pacman.y);
-                return dist > 8 ? { x: 0, y: map.length - 1 } : { x: pacman.x, y: pacman.y };
-            }, inHouse: true, releaseTimer: 180, adaptFactor: 0.2 }
-        ];
-        let score = 0;
-        let lives = 3;
-        let powerMode = false;
-        let powerModeTimer = 0;
-        let fruit = { x: 14, y: 15, visible: false, timer: 0 };
-        let gameLoop;
-        let dotsLeft = 0;
-        let tiltCooldown = 0;
-
-        // Ajuste responsivo e tela cheia
-        function resizeCanvas() {
-            const size = Math.min(window.innerWidth, window.innerHeight);
-            canvas.width = map[0].length * tileSize;
-            canvas.height = map.length * tileSize;
-            const scale = Math.floor(size / canvas.width);
-            tileSize = Math.floor(canvas.width / map[0].length * scale);
-            canvas.style.width = `${map[0].length * tileSize}px`;
-            canvas.style.height = `${map.length * tileSize}px`;
-        }
-
-        // Ativar tela cheia
-        function goFullscreen() {
-            if (canvas.requestFullscreen) {
-                canvas.requestFullscreen();
-            } else if (canvas.webkitRequestFullscreen) {
-                canvas.webkitRequestFullscreen();
-            } else if (canvas.msRequestFullscreen) {
-                canvas.msRequestFullscreen();
-            }
-        }
-
-        // Contagem inicial de pontos
-        function countDots() {
-            dotsLeft = 0;
-            for (let y = 0; y < map.length; y++) {
-                for (let x = 0; x < map[0].length; x++) {
-                    if (map[y][x] === 2 || map[y][x] === 3) dotsLeft++;
-                }
-            }
-        }
-
-        // Desenhar o mapa
-        function drawMap() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            for (let y = 0; y < map.length; y++) {
-                for (let x = 0; x < map[0].length; x++) {
-                    if (map[y][x] === 1) {
-                        ctx.fillStyle = '#800080';
-                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-                    } else if (map[y][x] === 2) {
-                        ctx.fillStyle = '#00ff00';
-                        ctx.beginPath();
-                        ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize / 8, 0, Math.PI * 2);
-                        ctx.fill();
-                    } else if (map[y][x] === 3) {
-                        ctx.fillStyle = '#ffa500';
-                        ctx.beginPath();
-                        ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                }
-            }
-        }
-
-        // Desenhar Pac-Man
-        function drawPacman(player, isSecond = false) {
-            ctx.fillStyle = isSecond ? '#00ffff' : '#ff00ff';
-            ctx.beginPath();
-            const mouthAngle = Math.sin(Date.now() / 100) * Math.PI / 4;
-            const radius = tileSize / 2 * (isSecond ? 1 : player.pulse);
-            ctx.arc(player.x * tileSize + tileSize / 2, player.y * tileSize + tileSize / 2, radius, mouthAngle, 2 * Math.PI - mouthAngle);
-            ctx.lineTo(player.x * tileSize + tileSize / 2, player.y * tileSize + tileSize / 2);
-            ctx.fill();
-            if (player.pulseTimer > 0) {
-                player.pulse = 1 + 0.2 * (player.pulseTimer / 5);
-                player.pulseTimer--;
-            } else {
-                player.pulse = 1;
-            }
-        }
-
-        // Desenhar fantasmas
-        function drawGhosts() {
-            ghosts.forEach(ghost => {
-                ctx.fillStyle = powerMode ? `rgba(0, 0, 255, ${0.7 + 0.3 * Math.sin(Date.now() / 100)})` : ghost.color;
-                ctx.beginPath();
-                const x = ghost.x * tileSize + tileSize / 2;
-                const y = ghost.y * tileSize + tileSize / 2;
-                ctx.moveTo(x - tileSize / 2, y);
-                ctx.lineTo(x, y - tileSize / 2);
-                ctx.lineTo(x + tileSize / 2, y);
-                ctx.lineTo(x, y + tileSize / 2);
-                ctx.closePath();
-                ctx.fill();
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(x - tileSize / 4, y - tileSize / 4, tileSize / 6, 0, Math.PI * 2);
-                ctx.arc(x + tileSize / 4, y - tileSize / 4, tileSize / 6, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        // Desenhar fruta
-        function drawFruit() {
-            if (fruit.visible) {
-                ctx.fillStyle = '#ff0000';
-                ctx.beginPath();
-                ctx.arc(fruit.x * tileSize + tileSize / 2, fruit.y * tileSize + tileSize / 2, tileSize / 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        // Movimento do Pac-Man
-        function movePacman(direction) {
-            if (pacman.directionQueue.length < 2) {
-                pacman.directionQueue.push(direction);
-            }
-            pacman.nextDirection = pacman.directionQueue[0];
-        }
-
-        function stopPacman() {
-            pacman.directionQueue = [];
-            pacman.nextDirection = null;
-        }
-
-        // Controle por inclinação (mobile)
-        let tiltDirection = null;
-        window.addEventListener('deviceorientation', (e) => {
-            if (tiltCooldown > 0) return;
-            const beta = e.beta;
-            const gamma = e.gamma;
-            if (Math.abs(gamma) > Math.abs(beta)) {
-                tiltDirection = gamma > 15 ? 'right' : gamma < -15 ? 'left' : null;
-            } else {
-                tiltDirection = beta > 15 ? 'down' : beta < -15 ? 'up' : null;
-            }
-            if (tiltDirection) {
-                movePacman(tiltDirection);
-                tiltCooldown = 15;
-            }
-        });
-
-        function updatePacman(player, isSecond = false) {
-            if (player.energy <= 0) return;
-            const newX = Math.round(player.x);
-            const newY = Math.round(player.y);
-
-            if (!isSecond) {
-                player.energy = Math.max(0, player.energy - 0.01);
-                energyDisplay.textContent = `Energy: ${Math.round(player.energy)}%`;
-                if (player.energy <= 0) {
-                    lives--;
-                    livesDisplay.textContent = `Lives: ${lives}`;
-                    resetLevel();
-                    if (lives === 0) {
-                        gameOverDisplay.style.display = 'block';
-                        cancelAnimationFrame(gameLoop);
-                    }
-                }
-                if (tiltCooldown > 0) tiltCooldown--;
-            }
-
-            // IA para segundo Pac-Man
-            if (isSecond && Math.abs(player.x - newX) < 0.1 && Math.abs(player.y - newY) < 0.1) {
-                const directions = ['up', 'down', 'left', 'right'];
-                const validDirections = directions.filter(dir => {
-                    let nextX = newX, nextY = newY;
-                    if (dir === 'up') nextY--;
-                    if (dir === 'down') nextY++;
-                    if (dir === 'left') nextX--;
-                    if (dir === 'right') nextX++;
-                    return nextX >= 0 && nextX < map[0].length && nextY >= 0 && nextY < map.length && map[nextY][nextX] !== 1;
-                });
-                player.direction = validDirections[Math.floor(Math.random() * validDirections.length)] || player.direction;
-            }
-
-            // Verificar interseção próxima
-            const isNearIntersection = Math.abs(player.x - newX) < 0.3 && Math.abs(player.y - newY) < 0.3;
-
-            // Tentar mudar de direção
-            if (!isSecond && player.directionQueue.length > 0) {
-                let nextDir = player.directionQueue[0];
-                let nextX = newX, nextY = newY;
-                if (nextDir === 'up') nextY--;
-                if (nextDir === 'down') nextY++;
-                if (nextDir === 'left') nextX--;
-                if (nextDir === 'right') nextX++;
-                if (nextX >= 0 && nextX < map[0].length && nextY >= 0 && nextY < map.length && map[nextY][nextX] !== 1) {
-                    player.direction = nextDir;
-                    player.x = newX + (player.x - newX) * 0.9; // Suavizar posição
-                    player.y = newY + (player.y - newY) * 0.9;
-                    player.pulse = 1.2;
-                    player.pulseTimer = 5;
-                    player.directionQueue.shift();
-                    player.nextDirection = player.directionQueue[0] || null;
-                } else if (player.directionQueue.length > 1) {
-                    player.directionQueue.shift();
-                    player.nextDirection = player.directionQueue[0] || null;
-                }
-            }
-
-            // Continuar na direção atual
-            if (player.direction) {
-                let nextX = player.x, nextY = player.y;
-                if (player.direction === 'up') nextY -= player.speed;
-                if (player.direction === 'down') nextY += player.speed;
-                if (player.direction === 'left') nextX -= player.speed;
-                if (player.direction === 'right') nextX += player.speed;
-
-                // Verificar colisão com paredes
-                const checkX = Math.round(nextX);
-                const checkY = Math.round(nextY);
-                if (checkX < 0 || checkX >= map[0].length || checkY < 0 || checkY >= map.length || map[checkY][checkX] === 1) {
-                    player.x = newX;
-                    player.y = newY;
-                    player.direction = player.nextDirection || null;
-                    if (player.nextDirection && !isSecond) {
-                        player.directionQueue = [player.nextDirection];
-                    }
-                } else {
-                    player.x = nextX;
-                    player.y = nextY;
-                }
-            }
-
-            // Comer pontos e pílulas
-            if (!isSecond && map[newY] && (map[newY][newX] === 2 || map[newY][newX] === 3)) {
-                if (map[newY][newX] === 2) {
-                    score += 10;
-                    player.energy = Math.min(100, player.energy + 0.5);
-                    dotsLeft--;
-                } else if (map[newY][newX] === 3) {
-                    score += 50;
-                    player.energy = Math.min(100, player.energy + 2);
-                    powerMode = true;
-                    powerModeTimer = 600;
-                    ghosts.forEach(ghost => {
-                        const oppositeDir = { 'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left' };
-                        ghost.direction = oppositeDir[ghost.direction] || ghost.direction;
-                    });
-                    dotsLeft--;
-                }
-                map[newY][newX] = 0;
-                scoreDisplay.textContent = `MuskCoins: ${score}`;
-                energyDisplay.textContent = `Energy: ${Math.round(player.energy)}%`;
-            }
-
-            // Comer fruta
-            if (!isSecond && fruit.visible && Math.round(player.x) === fruit.x && Math.round(player.y) === fruit.y) {
-                score += 100;
-                player.energy = Math.min(100, player.energy + 5);
-                fruit.visible = false;
-                scoreDisplay.textContent = `MuskCoins: ${score}`;
-                energyDisplay.textContent = `Energy: ${Math.round(player.energy)}%`;
-            }
-
-            // Túnel
-            if (player.x < -0.5) player.x = map[0].length - 0.5;
-            if (player.x > map[0].length - 0.5) player.x = -0.5;
-        }
-
-        // Movimento dos fantasmas
-        function moveGhosts() {
-            ghosts.forEach(ghost => {
-                const isAlignedX = Math.abs(ghost.x - Math.round(ghost.x)) < 0.03;
-                const isAlignedY = Math.abs(ghost.y - Math.round(ghost.y)) < 0.03;
-
-                // Lógica para sair da casa
-                if (ghost.inHouse) {
-                    ghost.releaseTimer--;
-                    if (ghost.releaseTimer <= 0) {
-                        if (Math.abs(ghost.x - 14) > 0.03) {
-                            ghost.direction = ghost.x < 14 ? 'right' : 'left';
-                        } else {
-                            ghost.x = 14;
-                            ghost.direction = 'up';
-                        }
-                        if (ghost.y <= 10) {
-                            ghost.inHouse = false;
-                            ghost.direction = Math.random() < 0.5 ? 'left' : 'right';
-                        }
-                    }
-                }
-
-                // Atualizar direção
-                if (!ghost.inHouse && (isAlignedX && isAlignedY || !ghost.direction || Math.random() < ghost.adaptFactor)) {
-                    const directions = ['up', 'down', 'left', 'right'];
-                    const validDirections = directions.filter(dir => {
-                        let nextX = Math.round(ghost.x), nextY = Math.round(ghost.y);
-                        if (dir === 'up') nextY--;
-                        if (dir === 'down') nextY++;
-                        if (dir === 'left') nextX--;
-                        if (dir === 'right') nextX++;
-                        return nextX >= 0 && nextX < map[0].length && nextY >= 0 && nextY < map.length && map[nextY][nextX] !== 1;
-                    });
-                    if (validDirections.length > 0) {
-                        const oppositeDir = { 'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left' };
-                        const filteredDirections = validDirections.filter(dir => dir !== oppositeDir[ghost.direction]);
-                        const directionsToUse = filteredDirections.length > 0 ? filteredDirections : validDirections;
-                        let bestDir = directionsToUse[0];
-                        if (!powerMode) {
-                            const target = ghost.target();
-                            let minDist = Infinity;
-                            directionsToUse.forEach(dir => {
-                                let nextX = Math.round(ghost.x), nextY = Math.round(ghost.y);
-                                if (dir === 'up') nextY--;
-                                if (dir === 'down') nextY++;
-                                if (dir === 'left') nextX--;
-                                if (dir === 'right') nextX++;
-                                const dist = Math.abs(nextX - target.x) + Math.abs(nextY - target.y);
-                                if (dist < minDist) {
-                                    minDist = dist;
-                                    bestDir = dir;
-                                }
-                            });
-                            const distToPacman = Math.abs(ghost.x - pacman.x) + Math.abs(ghost.y - pacman.y);
-                            ghost.adaptFactor = Math.min(0.3, ghost.adaptFactor + (distToPacman < 5 ? 0.01 : -0.005));
-                        } else {
-                            bestDir = directionsToUse[Math.floor(Math.random() * directionsToUse.length)];
-                        }
-                        ghost.direction = bestDir;
-                    } else {
-                        ghost.direction = null;
-                    }
-                }
-
-                // Mover na direção atual
-                let speed = powerMode ? 0.06 : 0.12;
-                if (ghost.direction) {
-                    let nextX = ghost.x, nextY = ghost.y;
-                    if (ghost.direction === 'up') nextY -= speed;
-                    if (ghost.direction === 'down') nextY += speed;
-                    if (ghost.direction === 'left') nextX -= speed;
-                    if (ghost.direction === 'right') nextX += speed;
-
-                    // Verificar colisão com paredes
-                    const checkX = Math.round(nextX);
-                    const checkY = Math.round(nextY);
-                    if (checkX < 0 || checkX >= map[0].length || checkY < 0 || checkY >= map.length || map[checkY][checkX] === 1) {
-                        ghost.x = Math.round(ghost.x);
-                        ghost.y = Math.round(ghost.y);
-                        ghost.direction = null;
-                    } else {
-                        ghost.x = nextX;
-                        ghost.y = nextY;
-                    }
-                }
-
-                // Túnel
-                if (ghost.x < -0.5) ghost.x = map[0].length - 0.5;
-                if (ghost.x > map[0].length - 0.5) ghost.x = -0.5;
-            });
-        }
-
-        // Verificar colisões
-        function checkCollisions() {
-            ghosts.forEach(ghost => {
-                if (Math.abs(pacman.x - ghost.x) < 0.5 && Math.abs(pacman.y - ghost.y) < 0.5) {
-                    if (powerMode) {
-                        ghost.x = 14;
-                        ghost.y = 11;
-                        ghost.inHouse = true;
-                        ghost.releaseTimer = 60;
-                        score += 200;
-                        scoreDisplay.textContent = `MuskCoins: ${score}`;
-                    } else {
-                        lives--;
-                        livesDisplay.textContent = `Lives: ${lives}`;
-                        resetLevel();
-                        if (lives === 0) {
-                            gameOverDisplay.style.display = 'block';
-                            cancelAnimationFrame(gameLoop);
-                        }
-                    }
-                }
-            });
-        }
-
-        // Gerenciar fruta
-        function updateFruit() {
-            fruit.timer++;
-            if (fruit.timer === 600 && !fruit.visible) {
-                fruit.visible = true;
-            } else if (fruit.timer === 1200 && fruit.visible) {
-                fruit.visible = false;
-                fruit.timer = 0;
-            }
-        }
-
-        // Atualizar modo de poder
-        function updatePowerMode() {
-            if (powerMode) {
-                powerModeTimer--;
-                if (powerModeTimer <= 0) powerMode = false;
-            }
-        }
-
-        // Loop principal
-        function gameLoopFn() {
-            updatePacman(pacman);
-            updatePacman(pacman2, true);
-            moveGhosts();
-            checkCollisions();
-            updateFruit();
-            updatePowerMode();
-            drawMap();
-            drawPacman(pacman);
-            drawPacman(pacman2, true);
-            drawGhosts();
-            drawFruit();
-            if (dotsLeft === 0) {
-                resetLevel();
-                score += 1000;
-                scoreDisplay.textContent = `MuskCoins: ${score}`;
-            }
-            gameLoop = requestAnimationFrame(gameLoopFn);
-        }
-
-        // Resetar nível
-        function resetLevel() {
-            map.forEach((row, y) => {
-                row.forEach((cell, x) => {
-                    if (cell === 0) map[y][x] = 2;
-                    if ((y === 1 && x === 1) || (y === 1 && x === 26) || (y === 23 && x === 1) || (y === 23 && x === 26)) map[y][x] = 3;
-                });
-            });
-            pacman.x = 14;
-            pacman.y = 23;
-            pacman.direction = 'right';
-            pacman.nextDirection = null;
-            pacman.directionQueue = [];
-            pacman.energy = 100;
-            pacman.pulse = 1;
-            pacman.pulseTimer = 0;
-            pacman2.x = 14;
-            pacman2.y = 1;
-            pacman2.direction = null;
-            pacman2.energy = 100;
-            pacman2.pulse = 1;
-            pacman2.pulseTimer = 0;
-            ghosts.forEach((g, i) => {
-                g.x = 14;
-                g.y = 11 + (i === 3 ? 2 : 0);
-                g.inHouse = true;
-                g.releaseTimer = i * 60;
-                g.adaptFactor = 0.2;
-            });
-            countDots();
-        }
+        // Gráficos
+        let weeklyChart, monthlyChart;
 
         // Inicialização
-        window.addEventListener('resize', resizeCanvas);
-        canvas.addEventListener('click', goFullscreen);
-        resizeCanvas();
-        countDots();
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowUp') movePacman('up');
-            if (e.key === 'ArrowDown') movePacman('down');
-            if (e.key === 'ArrowLeft') movePacman('left');
-            if (e.key === 'ArrowRight') movePacman('right');
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setupEventListeners();
+            updateUI();
+            renderCharts();
+            checkAchievements();
         });
-        document.addEventListener('keyup', () => stopPacman());
-        gameLoop = requestAnimationFrame(gameLoopFn);
+
+        // Carrega dados do localStorage
+        function loadData() {
+            const savedSettings = localStorage.getItem('aquaTrackSettings');
+            if (savedSettings) {
+                Object.assign(settings, JSON.parse(savedSettings));
+                document.getElementById('daily-goal').value = settings.dailyGoal;
+                document.getElementById('cup-size').value = settings.cupSize;
+                
+                // Aplica o modo escuro se necessário
+                if (settings.darkMode) {
+                    document.body.classList.add('dark-mode');
+                    document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            }
+            
+            const savedWaterData = localStorage.getItem('aquaTrackData');
+            if (savedWaterData) {
+                waterData = JSON.parse(savedWaterData);
+                
+                // Verifica se os dados de hoje estão atualizados
+                const today = new Date().toISOString().split('T')[0];
+                if (waterData.today.date !== today) {
+                    // Move os dados de hoje para o histórico
+                    if (waterData.today.amount > 0) {
+                        waterData.history.push(waterData.today);
+                    }
+                    
+                    // Verifica se atingiu a meta no dia anterior para calcular sequência
+                    const yesterday = waterData.today;
+                    if (yesterday.amount >= settings.dailyGoal) {
+                        if (!waterData.streak) waterData.streak = 0;
+                        waterData.streak++;
+                    } else {
+                        waterData.streak = 0;
+                    }
+                    
+                    // Cria novo registro para hoje
+                    waterData.today = {
+                        date: today,
+                        amount: 0,
+                        entries: []
+                    };
+                    
+                    saveData();
+                }
+            }
+        }
+
+        // Salva dados no localStorage
+        function saveData() {
+            localStorage.setItem('aquaTrackSettings', JSON.stringify(settings));
+            localStorage.setItem('aquaTrackData', JSON.stringify(waterData));
+        }
+
+        // Configura os event listeners
+        function setupEventListeners() {
+            // Botão para adicionar água
+            document.getElementById('add-water-btn').addEventListener('click', addWaterFromInput);
+            
+            // Botões rápidos
+            document.querySelectorAll('.quick-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const amount = parseInt(btn.getAttribute('data-amount'));
+                    addWater(amount);
+                    animateQuickButton(btn);
+                });
+            });
+            
+            // Botão para salvar configurações
+            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            
+            // Botão para alternar tema
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            // Permite adicionar água pressionando Enter no input
+            document.getElementById('water-amount').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addWaterFromInput();
+                }
+            });
+        }
+
+        // Anima o botão rápido quando clicado
+        function animateQuickButton(btn) {
+            btn.classList.add('pulse');
+            setTimeout(() => {
+                btn.classList.remove('pulse');
+            }, 1000);
+        }
+
+        // Adiciona água a partir do input
+        function addWaterFromInput() {
+            const amount = parseInt(document.getElementById('water-amount').value);
+            const unit = document.getElementById('water-unit').value;
+            
+            if (isNaN(amount) || amount <= 0) {
+                showMessage("Por favor, insira uma quantidade válida!", "negative");
+                document.getElementById('water-amount').classList.add('shake');
+                setTimeout(() => {
+                    document.getElementById('water-amount').classList.remove('shake');
+                }, 500);
+                return;
+            }
+            
+            let mlAmount = amount;
+            if (unit === 'copos') mlAmount = amount * settings.cupSize;
+            if (unit === 'garrafas') mlAmount = amount * 500; // Assumindo garrafa de 500ml
+            
+            addWater(mlAmount);
+            
+            // Reseta o input para o valor padrão
+            document.getElementById('water-amount').value = unit === 'copos' ? 1 : 200;
+        }
+
+        // Adiciona água ao registro
+        function addWater(amount) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            waterData.today.amount += amount;
+            waterData.today.entries.push({
+                time: timeStr,
+                amount: amount
+            });
+            
+            // Verifica conquistas
+            checkAchievements();
+            
+            saveData();
+            updateUI();
+            renderCharts();
+            
+            // Mostra feedback visual
+            const progress = document.getElementById('water-progress');
+            progress.classList.add('pulse');
+            setTimeout(() => {
+                progress.classList.remove('pulse');
+            }, 1000);
+            
+            // Mostra mensagem motivacional
+            showMotivationalMessage();
+        }
+
+        // Mostra mensagem motivacional apropriada
+        function showMotivationalMessage() {
+            const percentage = (waterData.today.amount / settings.dailyGoal) * 100;
+            let messageType = 'neutral';
+            let messagesToUse = messages.neutral;
+            
+            if (percentage >= 100) {
+                messageType = 'positive';
+                messagesToUse = messages.positive;
+            } else if (percentage < 30) {
+                messageType = 'veryNegative';
+                messagesToUse = messages.veryNegative;
+            } else if (percentage < 60) {
+                messageType = 'negative';
+                messagesToUse = messages.negative;
+            }
+            
+            const randomMessage = messagesToUse[Math.floor(Math.random() * messagesToUse.length)];
+            showMessage(randomMessage, messageType);
+        }
+
+        // Exibe uma mensagem na interface
+        function showMessage(text, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `
+                <div class="message-box ${type}">
+                    <div class="message-title">${type === 'positive' ? '🎉 Parabéns!' : type === 'veryNegative' ? '⚠️ Alerta!' : '💡 Lembrete'}</div>
+                    <div class="message-text">${text}</div>
+                </div>
+            `;
+            
+            // Anima a mensagem
+            anime({
+                targets: container.querySelector('.message-box'),
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 500,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        // Atualiza a interface
+        function updateUI() {
+            const percentage = Math.min(Math.round((waterData.today.amount / settings.dailyGoal) * 100, 100);
+            
+            // Atualiza barra de progresso
+            document.getElementById('water-progress').style.width = `${percentage}%`;
+            document.getElementById('progress-text').textContent = `${percentage}%`;
+            
+            // Atualiza estatísticas
+            document.getElementById('today-consumption').textContent = `${waterData.today.amount} ml`;
+            document.getElementById('today-goal').textContent = `${settings.dailyGoal} ml`;
+            
+            const remaining = Math.max(settings.dailyGoal - waterData.today.amount, 0);
+            const exceeded = Math.max(waterData.today.amount - settings.dailyGoal, 0);
+            
+            if (exceeded > 0) {
+                document.getElementById('today-remaining').textContent = `+${exceeded} ml`;
+                document.getElementById('today-remaining').style.color = 'var(--success)';
+            } else {
+                document.getElementById('today-remaining').textContent = `${remaining} ml`;
+                document.getElementById('today-remaining').style.color = remaining > settings.dailyGoal * 0.5 ? 'var(--danger)' : 'var(--primary)';
+            }
+            
+            // Atualiza estatísticas gerais
+            updateGeneralStats();
+        }
+
+        // Atualiza estatísticas gerais
+        function updateGeneralStats() {
+            // Dias consecutivos
+            const streak = waterData.streak || 0;
+            document.getElementById('streak-days').textContent = streak;
+            
+            // Médias
+            if (waterData.history.length > 0) {
+                // Média semanal (últimos 7 dias)
+                const lastWeek = waterData.history.slice(-7);
+                const weekTotal = lastWeek.reduce((sum, day) => sum + day.amount, 0) + waterData.today.amount;
+                const weekAvg = Math.round(weekTotal / (lastWeek.length + 1));
+                document.getElementById('weekly-avg').textContent = `${weekAvg} ml`;
+                
+                // Média mensal (últimos 30 dias)
+                const lastMonth = waterData.history.slice(-30);
+                const monthTotal = lastMonth.reduce((sum, day) => sum + day.amount, 0) + waterData.today.amount;
+                const monthAvg = Math.round(monthTotal / (lastMonth.length + 1));
+                document.getElementById('monthly-avg').textContent = `${monthAvg} ml`;
+                
+                // Total de dias registrados
+                document.getElementById('total-days').textContent = waterData.history.length + (waterData.today.amount > 0 ? 1 : 0);
+            }
+        }
+
+        // Renderiza os gráficos
+        function renderCharts() {
+            renderWeeklyChart();
+            renderMonthlyChart();
+        }
+
+        // Renderiza o gráfico semanal
+        function renderWeeklyChart() {
+            const ctx = document.getElementById('weekly-chart').getContext('2d');
+            
+            // Cria um array com os últimos 7 dias (incluindo hoje)
+            const days = [];
+            const labels = [];
+            const today = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(today.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const dayName = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][date.getDay()];
+                
+                labels.push(dayName);
+                
+                let amount = 0;
+                if (i === 0) {
+                    amount = waterData.today.amount;
+                } else {
+                    const dayData = waterData.history.find(d => d.date === dateStr);
+                    if (dayData) amount = dayData.amount;
+                }
+                
+                days.push(amount);
+            }
+            
+            // Destrói o gráfico anterior se existir
+            if (weeklyChart) {
+                weeklyChart.destroy();
+            }
+            
+            weeklyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Consumo de Água (ml)',
+                        data: days,
+                        backgroundColor: days.map(amount => 
+                            amount >= settings.dailyGoal ? 'rgba(46, 204, 113, 0.7)' : 
+                            amount >= settings.dailyGoal * 0.7 ? 'rgba(52, 152, 219, 0.7)' : 
+                            'rgba(231, 76, 60, 0.7)'
+                        ),
+                        borderColor: days.map(amount => 
+                            amount >= settings.dailyGoal ? 'rgba(46, 204, 113, 1)' : 
+                            amount >= settings.dailyGoal * 0.7 ? 'rgba(52, 152, 219, 1)' : 
+                            'rgba(231, 76, 60, 1)'
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: settings.dailyGoal * 1.5,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const percentage = Math.round((context.raw / settings.dailyGoal) * 100);
+                                    return `${context.raw} ml (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Renderiza o gráfico mensal
+        function renderMonthlyChart() {
+            const ctx = document.getElementById('monthly-chart').getContext('2d');
+            
+            // Agrupa os dados por semana no mês atual
+            const weeks = [];
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            let currentWeekStart = new Date(firstDay);
+            let weekNumber = 1;
+            
+            while (currentWeekStart <= lastDay) {
+                const currentWeekEnd = new Date(currentWeekStart);
+                currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+                if (currentWeekEnd > lastDay) currentWeekEnd = lastDay;
+                
+                // Calcula o total para esta semana
+                let weekTotal = 0;
+                let daysInWeek = 0;
+                
+                for (let d = new Date(currentWeekStart); d <= currentWeekEnd; d.setDate(d.getDate() + 1)) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    
+                    if (dateStr === waterData.today.date) {
+                        weekTotal += waterData.today.amount;
+                        daysInWeek++;
+                    } else {
+                        const dayData = waterData.history.find(item => item.date === dateStr);
+                        if (dayData) {
+                            weekTotal += dayData.amount;
+                            daysInWeek++;
+                        }
+                    }
+                }
+                
+                if (daysInWeek > 0) {
+                    weeks.push({
+                        label: `Semana ${weekNumber}`,
+                        value: weekTotal / daysInWeek // Média diária da semana
+                    });
+                } else {
+                    weeks.push({
+                        label: `Semana ${weekNumber}`,
+                        value: 0
+                    });
+                }
+                
+                weekNumber++;
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            }
+            
+            // Destrói o gráfico anterior se existir
+            if (monthlyChart) {
+                monthlyChart.destroy();
+            }
+            
+            monthlyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: weeks.map(w => w.label),
+                    datasets: [{
+                        label: 'Média Diária de Consumo (ml)',
+                        data: weeks.map(w => w.value),
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: weeks.map(w => 
+                            w.value >= settings.dailyGoal ? 'rgba(46, 204, 113, 1)' : 
+                            w.value >= settings.dailyGoal * 0.7 ? 'rgba(52, 152, 219, 1)' : 
+                            'rgba(231, 76, 60, 1)'
+                        ),
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }, {
+                        label: 'Meta Diária',
+                        data: weeks.map(() => settings.dailyGoal),
+                        borderColor: 'rgba(243, 156, 18, 0.7)',
+                        borderWidth: 1,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: settings.dailyGoal * 1.5,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        const percentage = Math.round((context.raw / settings.dailyGoal) * 100);
+                                        return `Média: ${Math.round(context.raw)} ml (${percentage}%)`;
+                                    } else {
+                                        return `Meta: ${context.raw} ml`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Verifica e atualiza conquistas
+        function checkAchievements() {
+            if (!waterData.achievements) waterData.achievements = [];
+            
+            // Verifica conquistas baseadas em consumo diário
+            achievementsList.forEach(achievement => {
+                if (achievement.type !== 'streak' && !achievement.achieved) {
+                    if (waterData.today.amount >= achievement.goal) {
+                        achievement.achieved = true;
+                        if (!waterData.achievements.includes(achievement.id)) {
+                            waterData.achievements.push(achievement.id);
+                            showAchievementUnlocked(achievement);
+                        }
+                    }
+                }
+            });
+            
+            // Verifica conquistas baseadas em sequência
+            const streak = waterData.streak || 0;
+            achievementsList.forEach(achievement => {
+                if (achievement.type === 'streak' && !achievement.achieved) {
+                    if (streak >= achievement.goal) {
+                        achievement.achieved = true;
+                        if (!waterData.achievements.includes(achievement.id)) {
+                            waterData.achievements.push(achievement.id);
+                            showAchievementUnlocked(achievement);
+                        }
+                    }
+                }
+            });
+            
+            // Atualiza a exibição das conquistas
+            renderAchievements();
+        }
+
+        // Mostra animação de conquista desbloqueada
+        function showAchievementUnlocked(achievement) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `
+                <div class="message-box positive">
+                    <div class="trophy"><i class="fas ${achievement.icon}"></i></div>
+                    <div class="message-title">CONQUISTA DESBLOQUEADA!</div>
+                    <div class="message-text">${achievement.name}: ${achievement.description}</div>
+                </div>
+            `;
+            
+            // Animação especial
+            anime({
+                targets: container.querySelector('.trophy'),
+                scale: [0, 1],
+                rotate: [0, 360],
+                duration: 1000,
+                easing: 'easeOutElastic'
+            });
+        }
+
+        // Renderiza a lista de conquistas
+        function renderAchievements() {
+            const container = document.getElementById('achievements-container');
+            container.innerHTML = '';
+            
+            achievementsList.forEach(achievement => {
+                const achieved = waterData.achievements.includes(achievement.id);
+                
+                const element = document.createElement('div');
+                element.className = 'achievement';
+                element.innerHTML = `
+                    <i class="fas ${achievement.icon}" style="${achieved ? 'color: gold;' : 'color: var(--light);'}"></i>
+                    <div class="achievement-text" style="${achieved ? 'font-weight: bold;' : 'opacity: 0.7;'}">
+                        ${achieved ? achievement.name : achievement.description}
+                    </div>
+                `;
+                
+                container.appendChild(element);
+            });
+        }
+
+        // Salva as configurações
+        function saveSettings() {
+            settings.dailyGoal = parseInt(document.getElementById('daily-goal').value) || 2000;
+            settings.cupSize = parseInt(document.getElementById('cup-size').value) || 200;
+            
+            saveData();
+            updateUI();
+            renderCharts();
+            
+            showMessage("Configurações salvas com sucesso!", "positive");
+        }
+
+        // Alterna entre tema claro e escuro
+        function toggleTheme() {
+            settings.darkMode = !settings.darkMode;
+            document.body.classList.toggle('dark-mode');
+            
+            if (settings.darkMode) {
+                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            
+            saveData();
+            
+            // Atualiza gráficos para o novo tema
+            renderCharts();
+        }
     </script>
 </body>
 </html>
