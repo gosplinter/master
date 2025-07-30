@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudgetTrack - Controle de Despesas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2980b9;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #ecf0f1;
+            --bg: #34495e;
+            --card: #2c3e50;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --light-bg: #f5f6f5;
+            --light-text: #2c3e50;
+            --light-card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.light-mode {
+            --bg: var(--light-bg);
+            --text: var(--light-text);
+            --card: var(--light-card);
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .toggle-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px var(--shadow);
+            transition: background-color 0.3s;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background-color: var(--dark);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .expense-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input, select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--dark);
+            background-color: var(--bg);
+            color: var(--text);
+            flex: 1;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--dark);
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .quick-btn:hover {
+            background-color: var(--primary);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: var(--dark);
+            text-align: center;
+            transition: background-color 0.3s, opacity 0.5s;
+            opacity: 1;
+        }
+
+        .message.hidden {
+            opacity: 0;
+        }
+
+        .positive {
+            border-left: 5px solid var(--success);
+        }
+
+        .negative {
+            border-left: 5px solid var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 BudgetTrack</h1>
+            <button class="toggle-btn" id="theme-toggle" aria-label="Alternar entre modo claro e escuro">Modo Claro</button>
+        </header>
+
+        <div class="card">
+            <h2>Seu Orçamento Este Mês</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="budget-progress">0%</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="month-spent">R$ 0,00</div>
+                    <div>Gasto</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="month-budget">R$ 5000,00</div>
+                    <div>Orçamento</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="month-remaining">R$ 5000,00</div>
+                    <div>Restante</div>
+                </div>
+            </div>
+
+            <div class="expense-input">
+                <input type="number" id="expense-amount" min="0.01" step="0.01" value="50.00" placeholder="Valor" aria-label="Valor da despesa">
+                <select id="expense-category" aria-label="Categoria da despesa">
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Moradia">Moradia</option>
+                    <option value="Outros">Outros</option>
+                </select>
+                <button id="add-expense-btn" aria-label="Adicionar despesa">+</button>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-btn" data-amount="20.00" data-category="Alimentação" role="button" tabindex="0" aria-label="Adicionar R$ 20,00 em Alimentação">
+                    <div>Comida (R$ 20,00)</div>
+                </div>
+                <div class="quick-btn" data-amount="10.00" data-category="Transporte" role="button" tabindex="0" aria-label="Adicionar R$ 10,00 em Transporte">
+                    <div>Ônibus (R$ 10,00)</div>
+                </div>
+                <div class="quick-btn" data-amount="50.00" data-category="Lazer" role="button" tabindex="0" aria-label="Adicionar R$ 50,00 em Lazer">
+                    <div>Cinema (R$ 50,00)</div>
+                </div>
+            </div>
+
+            <div id="message-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>Distribuição de Gastos</h2>
+            <div class="chart-container">
+                <canvas id="category-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Configurações</h2>
+            <div style="margin-bottom: 15px;">
+                <label for="monthly-budget">Orçamento mensal (R$):</label>
+                <input type="number" id="monthly-budget" min="100" step="0.01" value="5000.00" style="width: 100%; margin-top: 5px;" aria-label="Orçamento mensal">
+            </div>
+            <button id="save-settings-btn" style="width: 100%;" aria-label="Salvar configurações">Salvar Configurações</button>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const settings = {
+            monthlyBudget: 5000.00,
+            darkMode: true
+        };
+
+        // Dados
+        let expenseData = {
+            currentMonth: {
+                month: new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' }),
+                totalSpent: 0,
+                entries: []
+            },
+            history: []
+        };
+
+        // Gráficos
+        let categoryChart;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setupEventListeners();
+            updateUI();
+            renderChart();
+        });
+
+        // Carrega dados do localStorage
+        function loadData() {
+            const savedSettings = localStorage.getItem('budgetTrackSettings');
+            if (savedSettings) {
+                Object.assign(settings, JSON.parse(savedSettings));
+                document.getElementById('monthly-budget').value = settings.monthlyBudget.toFixed(2);
+                
+                if (!settings.darkMode) {
+                    toggleTheme();
+                }
+            }
+            
+            const savedExpenseData = localStorage.getItem('budgetTrackData');
+            if (savedExpenseData) {
+                const parsedData = JSON.parse(savedExpenseData);
+                
+                if (parsedData.currentMonth && parsedData.history) {
+                    expenseData = parsedData;
+                    
+                    const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+                    if (expenseData.currentMonth.month !== currentMonth) {
+                        if (expenseData.currentMonth.totalSpent > 0) {
+                            expenseData.history.push(expenseData.currentMonth);
+                        }
+                        
+                        expenseData.currentMonth = {
+                            month: currentMonth,
+                            totalSpent: 0,
+                            entries: []
+                        };
+                        
+                        expenseData.history = expenseData.history.slice(-12); // Limitar a 12 meses
+                        saveData();
+                    }
+                }
+            }
+        }
+
+        // Salva dados no localStorage
+        function saveData() {
+            localStorage.setItem('budgetTrackSettings', JSON.stringify(settings));
+            localStorage.setItem('budgetTrackData', JSON.stringify(expenseData));
+        }
+
+        // Configura eventos
+        function setupEventListeners() {
+            document.getElementById('add-expense-btn').addEventListener('click', addExpenseFromInput);
+            
+            document.querySelectorAll('.quick-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const amount = parseFloat(btn.getAttribute('data-amount'));
+                    const category = btn.getAttribute('data-category');
+                    addExpense(amount, category);
+                });
+                btn.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        const amount = parseFloat(btn.getAttribute('data-amount'));
+                        const category = btn.getAttribute('data-category');
+                        addExpense(amount, category);
+                    }
+                });
+            });
+            
+            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            document.getElementById('expense-amount').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addExpenseFromInput();
+                }
+            });
+        }
+
+        // Adiciona despesa a partir do input
+        function addExpenseFromInput() {
+            const amountInput = document.getElementById('expense-amount');
+            const amount = parseFloat(amountInput.value);
+            const category = document.getElementById('expense-category').value;
+            
+            if (isNaN(amount) || amount <= 0) {
+                showMessage("Digite um valor válido!", "negative");
+                return;
+            }
+            
+            addExpense(amount, category);
+            amountInput.value = '50.00';
+        }
+
+        // Adiciona despesa ao registro
+        function addExpense(amount, category) {
+            expenseData.currentMonth.totalSpent += amount;
+            expenseData.currentMonth.entries.push({
+                time: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                date: new Date().toLocaleDateString('pt-BR'),
+                amount: amount,
+                category: category
+            });
+            
+            saveData();
+            updateUI();
+            renderChart();
+            showMotivationalMessage();
+        }
+
+        // Atualiza a interface
+        function updateUI() {
+            const percentage = Math.min(Math.round((expenseData.currentMonth.totalSpent / settings.monthlyBudget) * 100), 100);
+            
+            document.getElementById('budget-progress').style.width = `${percentage}%`;
+            document.getElementById('budget-progress').textContent = `${percentage}%`;
+            document.getElementById('month-spent').textContent = `R$ ${expenseData.currentMonth.totalSpent.toFixed(2)}`;
+            document.getElementById('month-budget').textContent = `R$ ${settings.monthlyBudget.toFixed(2)}`;
+            
+            const remaining = Math.max(settings.monthlyBudget - expenseData.currentMonth.totalSpent, 0);
+            const exceeded = Math.max(expenseData.currentMonth.totalSpent - settings.monthlyBudget, 0);
+            
+            if (exceeded > 0) {
+                document.getElementById('month-remaining').textContent = `-R$ ${exceeded.toFixed(2)}`;
+                document.getElementById('month-remaining').style.color = 'var(--danger)';
+            } else {
+                document.getElementById('month-remaining').textContent = `R$ ${remaining.toFixed(2)}`;
+                document.getElementById('month-remaining').style.color = 'var(--success)';
+            }
+        }
+
+        // Renderiza o gráfico
+        function renderChart() {
+            const ctx = document.getElementById('category-chart').getContext('2d');
+            
+            // Agrupa despesas por categoria
+            const categories = ['Alimentação', 'Transporte', 'Lazer', 'Moradia', 'Outros'];
+            const amounts = categories.map(category => 
+                expenseData.currentMonth.entries
+                    .filter(entry => entry.category === category)
+                    .reduce((sum, entry) => sum + entry.amount, 0)
+            );
+            
+            if (categoryChart) {
+                categoryChart.destroy();
+            }
+            
+            categoryChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: amounts,
+                        backgroundColor: [
+                            'var(--primary)',
+                            'var(--success)',
+                            'var(--danger)',
+                            '#f1c40f',
+                            '#9b59b6'
+                        ],
+                        borderColor: settings.darkMode ? 'var(--dark)' : 'var(--light-bg)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: settings.darkMode ? 'var(--text)' : 'var(--light-text)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Mostra mensagem motivacional
+        function showMotivationalMessage() {
+            const percentage = expenseData.currentMonth.totalSpent / settings.monthlyBudget;
+            const container = document.getElementById('message-container');
+            
+            let message = '';
+            let type = '';
+            
+            if (percentage > 1) {
+                message = 'Atenção! Você ultrapassou seu orçamento! 🚨';
+                type = 'negative';
+            } else if (percentage >= 0.8) {
+                message = 'Cuidado! Você está quase no limite do orçamento! ⚠️';
+                type = 'negative';
+            } else if (percentage >= 0.5) {
+                message = 'Você está gerenciando bem! Continue controlando os gastos! 💪';
+                type = '';
+            } else if (expenseData.currentMonth.totalSpent > 0) {
+                message = 'Ótimo começo! Mantenha o controle das suas despesas! 💰';
+                type = 'positive';
+            } else {
+                message = 'Comece agora a registrar suas despesas! 📝';
+                type = 'negative';
+            }
+            
+            showMessage(message, type);
+        }
+
+        // Salva configurações
+        function saveSettings() {
+            const newBudget = parseFloat(document.getElementById('monthly-budget').value);
+            
+            if (isNaN(newBudget) || newBudget < 100) {
+                showMessage("Orçamento inválido! Insira um valor de pelo menos R$ 100,00.", "negative");
+                return;
+            }
+            
+            settings.monthlyBudget = newBudget;
+            saveData();
+            updateUI();
+            renderChart();
+            
+            showMessage("Configurações salvas!", "positive");
+        }
+
+        // Alterna tema
+        function toggleTheme() {
+            settings.darkMode = !settings.darkMode;
+            document.body.classList.toggle('light-mode');
+            
+            document.getElementById('theme-toggle').textContent = settings.darkMode ? 'Modo Claro' : 'Modo Escuro';
+            
+            document.querySelectorAll('input, select').forEach(el => {
+                el.style.backgroundColor = settings.darkMode ? 'var(--bg)' : 'var(--light-bg)';
+                el.style.color = settings.darkMode ? 'var(--text)' : 'var(--light-text)';
+                el.style.borderColor = settings.darkMode ? 'var(--dark)' : 'var(--light-text)';
+            });
+            
+            saveData();
+            renderChart();
+        }
+
+        // Mostra mensagem
+        function showMessage(text, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `
+                <div class="message ${type}">
+                    ${text}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const message = container.querySelector('.message');
+                if (message) {
+                    message.classList.add('hidden');
+                    setTimeout(() => {
+                        container.innerHTML = '';
+                    }, 500);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
