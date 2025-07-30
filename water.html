@@ -2,94 +2,162 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Hidratação Inteligente 💧</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQUA+ 💧</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #e1bee7);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 2rem;
-      background: #f0f8ff;
     }
     h1 {
-      color: #0077cc;
+      color: #0077c2;
     }
-    .counter {
-      font-size: 1.5rem;
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .progress-bar {
+      height: 20px;
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
       margin: 1rem 0;
     }
+    .progress-fill {
+      height: 100%;
+      background: #00bcd4;
+      width: 0%;
+      transition: width 0.5s;
+    }
     button {
-      padding: 1rem 2rem;
-      font-size: 1.2rem;
-      margin: 1rem;
-      border: none;
-      border-radius: 8px;
-      background-color: #00bfff;
+      background: #00bcd4;
       color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1.2rem;
+      width: 100%;
       cursor: pointer;
+      margin: 1rem 0;
+    }
+    .motivacao {
+      font-style: italic;
+      font-size: 1rem;
+      margin: 1rem 0;
+      color: #555;
     }
     input {
-      font-size: 1rem;
-      padding: 0.5rem;
-      width: 80px;
+      width: 60px;
       text-align: center;
+      font-size: 1rem;
+    }
+    .historico {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>AQUA+ 💧</h1>
+    <p>Sua hidratação, sua energia!</p>
 
-  <h1>💧 Alerta para Beber Água</h1>
+    <p>🧍‍♂️ Hoje você bebeu: <span id="copos">0</span> / <span id="meta">8</span> copos</p>
+    <div class="progress-bar">
+      <div class="progress-fill" id="barra"></div>
+    </div>
 
-  <div class="counter">
-    Copos bebidos hoje: <span id="copos">0</span> / <span id="meta">8</span>
-  </div>
+    <div class="motivacao" id="motivacao">Vamos começar bem o dia! 🌞</div>
 
-  <button onclick="beberAgua()">Bebi um copo 💧</button>
+    <button onclick="beberAgua()">Bebi um copo 💧</button>
 
-  <div>
-    <label for="metaInput">Meta diária:</label>
-    <input type="number" id="metaInput" value="8" min="1" onchange="alterarMeta()" />
+    <label>Meta diária: <input type="number" id="metaInput" value="8" min="1" onchange="alterarMeta()" /> copos</label>
+
+    <div class="historico">
+      <p>📅 Últimos dias: <span id="historicoTexto">Seg: -, Ter: -, Qua: -</span></p>
+    </div>
   </div>
 
   <audio id="alarme" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
   <script>
-    // Valores iniciais
+    const frases = [
+      "A água é o combustível da sua mente 💡",
+      "Cada copo te deixa mais forte 💪",
+      "Seu corpo agradece! 💧",
+      "Beba água e floresça 🌸",
+      "Cuidar de si é um ato de amor 💙",
+      "Você está indo muito bem 👏",
+      "Um gole de cada vez 🥤",
+      "Sua energia está subindo ⚡",
+    ];
+
     let copos = parseInt(localStorage.getItem("copos")) || 0;
     let meta = parseInt(localStorage.getItem("meta")) || 8;
+    let historico = JSON.parse(localStorage.getItem("historico")) || [];
     const hoje = new Date().toDateString();
     const ultimoDia = localStorage.getItem("ultimoDia");
 
-    // Reset diário automático
+    // Reset diário
     if (ultimoDia !== hoje) {
+      if (ultimoDia && !isNaN(copos)) {
+        historico.unshift(copos);
+        if (historico.length > 7) historico.pop();
+        localStorage.setItem("historico", JSON.stringify(historico));
+      }
       copos = 0;
       localStorage.setItem("copos", 0);
       localStorage.setItem("ultimoDia", hoje);
     }
 
-    // Atualizar a tela
-    document.getElementById("copos").textContent = copos;
-    document.getElementById("meta").textContent = meta;
-    document.getElementById("metaInput").value = meta;
+    function atualizarTela() {
+      document.getElementById("copos").textContent = copos;
+      document.getElementById("meta").textContent = meta;
+      document.getElementById("metaInput").value = meta;
+      const progresso = Math.min(100, (copos / meta) * 100);
+      document.getElementById("barra").style.width = `${progresso}%`;
+      document.getElementById("motivacao").textContent = frases[Math.floor(Math.random() * frases.length)];
+      atualizarHistorico();
+    }
 
-    // Função para beber água
     function beberAgua() {
       copos++;
       localStorage.setItem("copos", copos);
-      document.getElementById("copos").textContent = copos;
+      atualizarTela();
       if (copos >= meta) {
-        alert("Parabéns! Você atingiu sua meta de hidratação hoje! 🎉");
+        alert("🎉 Parabéns! Você atingiu sua meta de hidratação hoje!");
       }
     }
 
-    // Alterar meta
     function alterarMeta() {
       meta = parseInt(document.getElementById("metaInput").value);
       localStorage.setItem("meta", meta);
-      document.getElementById("meta").textContent = meta;
+      atualizarTela();
     }
 
-    // Notificação do navegador
+    function atualizarHistorico() {
+      const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const hojeIndex = new Date().getDay();
+      const texto = historico.map((h, i) => {
+        const dia = dias[(hojeIndex - i - 1 + 7) % 7];
+        return `${dia}: ${h}`;
+      }).join(', ');
+      document.getElementById("historicoTexto").textContent = texto || 'Sem dados ainda.';
+    }
+
     function pedirPermissaoNotificacoes() {
       if ("Notification" in window && Notification.permission !== "granted") {
         Notification.requestPermission();
@@ -102,7 +170,6 @@
       }
     }
 
-    // Alerta sonoro + notificação a cada 60 minutos
     setInterval(() => {
       document.getElementById("alarme").play();
       notificarUsuario();
@@ -110,6 +177,7 @@
     }, 60 * 60 * 1000); // 60 minutos
 
     pedirPermissaoNotificacoes();
+    atualizarTela();
   </script>
 </body>
 </html>
